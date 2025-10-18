@@ -1,0 +1,92 @@
+mod game_state;
+mod start_state;
+mod graphics;
+
+use std::time::Duration;
+use glume::window::{Event, MouseButton};
+use glume::gl;
+use crate::game_state::{generate_state_collection};
+use crate::graphics::GraphicsPainter;
+
+#[tokio::main]
+async fn main()  {
+    let window_config = glume::window::WindowConfiguration {
+        title: "4 Connect".to_string(),
+        size: (800, 800),
+        gl_version: (3, 3),
+    };
+
+    let window = window_config.build_window();
+
+
+    // after the window is created, we can call OpenGL functions, not before
+    unsafe {
+        gl::Enable(gl::DEBUG_OUTPUT);
+        gl::Enable(gl::STENCIL_TEST);
+    }
+
+    let mut screen_extension = [0.0, 0.0];
+    let mut adjusted_cursor_pos= [0.0, 0.0];
+
+
+    let mut state_array = generate_state_collection();
+    let mut current_index : usize = 0;
+    state_array[current_index].initialize();
+    let graphics = GraphicsPainter::new();
+
+    const DELTA_TIME: f32 = 0.02;
+
+    let mut init = false;
+    window.run(move |wc, event| {
+        if !init {
+            wc.set_tick_duration(Duration::from_secs_f32(DELTA_TIME));
+            init = true;
+        }
+        match event {
+            Event::Resized(width, height) => {
+                screen_extension = [width as f32, height as f32];
+                unsafe {
+                    gl::Viewport(0, 0, width as i32, height as i32);
+                }
+            }
+
+            Event::RedrawRequested => {
+                unsafe {
+                    gl::ClearColor(0.0, 0.0, 0.0, 1.0);
+                    gl::Clear(gl::COLOR_BUFFER_BIT | gl::STENCIL_BUFFER_BIT);
+
+                };
+                state_array[current_index].draw(&graphics);
+            }
+
+            Event::CursorMoved(x, y) => {
+                adjusted_cursor_pos =  [ 2.0_f32 * x / screen_extension[0] - 1.0_f32,
+                1.0 - 2.0_f32 * y / screen_extension[1]];
+
+            }
+
+            Event::Tick(tick) => {
+                let delta_time = tick.ticks_passed as f32 * DELTA_TIME;
+                let res = state_array[current_index].update(delta_time);
+                if let Some(follow_index) = res {
+                    current_index = follow_index as usize;
+                    state_array[current_index].initialize();
+                }
+                wc.request_redraw();
+            }
+
+
+
+            Event::MouseButtonPressed(button) => {
+                wc.request_redraw();
+
+                if button == MouseButton::Left {
+                    state_array[current_index].mouse_click(adjusted_cursor_pos);
+                }
+            }
+
+            _ => {}
+        }
+        Ok(())
+    })
+}
