@@ -1,4 +1,4 @@
-use crate::game_state::{GameState, GameStateIndex};
+use crate::game_state::{Blackboard, GameState, GameStateIndex};
 use crate::graphics;
 use crate::graphics::{Color, GraphicsPainter};
 
@@ -14,7 +14,7 @@ impl StartState {
 }
 
 impl GameState for StartState {
-    fn initialize(&mut self) {
+    fn enter(&mut self, _board: &Blackboard) {
         self.passed_time = 0.0;
     }
 
@@ -28,15 +28,19 @@ impl GameState for StartState {
     }
 
     fn draw(&mut self, graphics : &GraphicsPainter) {
-    
+
         if self.passed_time < 0.5 {
             graphics.draw_circle_normal(0.2, [0.0, 0.0], Color::Yellow);
         }
-        else { 
-            
+        else {
+
             graphics.draw_circle_into_stencil(0.05, [-0.75, -0.75]);
             graphics.draw_rectangle_conditional_stencil([-1.0, -1.0],[0.0, 0.0], Color::Brown);
         }
-      
+
+    }
+
+    fn leave(&self, _blackboard: &mut Blackboard)  {
+
     }
 }

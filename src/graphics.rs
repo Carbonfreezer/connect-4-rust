@@ -2,6 +2,7 @@ use glume::gl;
 use glume::gl::types::*;
 
 
+/// Represents color types we can draw elements with.
 pub enum Color
 {
     Brown,
@@ -21,6 +22,9 @@ fn get_color_vector(color : Color) -> [f32; 3] {
     }
 }
 
+
+/// The graphics painter is capable of painting circles and rectangles. It is also capable of stenceling
+/// out circles of rectangles. The circle stencils have to be painted upfront.
 pub struct GraphicsPainter {
     shader_program: GLuint,
     circle_vba: GLuint,
@@ -191,11 +195,15 @@ impl GraphicsPainter {
         }
     }
 
+    /// Draws a circle to be visible on screen.
     pub fn draw_circle_normal(&self, radius : f32, position: [f32; 2], color: Color) {
         let scale = [radius, radius];
         self.draw_geometry(self.circle_vba, self.num_circle_vertices, scale, position, color);
     }
 
+    /// Draws the circle only into the stencil buffer. This is meant to be used in conjunction
+    /// with the ['draw_rectangle_conditional_stencil'], that skips drawing the rectangle, where the
+    /// mask has been drawn.
     pub fn draw_circle_into_stencil(&self, radius : f32, position: [f32; 2]) {
         let scale = [radius, radius];
 
@@ -213,6 +221,8 @@ impl GraphicsPainter {
         }
     }
 
+    
+    /// Draws a rectangle with the two corners (and color) given.
     pub fn draw_rectangle_normal(&self, lower_left: [f32; 2] , upper_right: [f32; 2], color: Color) {
         let translation = [(lower_left[0] + upper_right[0]) / 2.0,
             (lower_left[1] + upper_right[1]) / 2.0];
@@ -221,6 +231,8 @@ impl GraphicsPainter {
         self.draw_geometry(self.rectangle_vba, self.num_rectangle_vertices, scale, translation, color);
     }
 
+    /// Draws a rectangle with the two corners but only at the positions where the stencil is not set.
+    /// This is meant to be used with ['draw_circle_into_stencil']. 
     pub fn draw_rectangle_conditional_stencil(&self, lower_left: [f32; 2] , upper_right: [f32; 2], color: Color) {
         let translation = [(lower_left[0] + upper_right[0]) / 2.0,
             (lower_left[1] + upper_right[1]) / 2.0];
@@ -236,9 +248,7 @@ impl GraphicsPainter {
         }
 
     }
-
-
-
+    
 }
 
 

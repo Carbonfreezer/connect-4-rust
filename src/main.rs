@@ -1,11 +1,12 @@
 mod game_state;
 mod start_state;
 mod graphics;
+mod player_start_selection;
 
 use std::time::Duration;
 use glume::window::{Event, MouseButton};
 use glume::gl;
-use crate::game_state::{generate_state_collection};
+use crate::game_state::{generate_state_collection, Blackboard, GameStateIndex};
 use crate::graphics::GraphicsPainter;
 
 #[tokio::main]
@@ -30,8 +31,9 @@ async fn main()  {
 
 
     let mut state_array = generate_state_collection();
-    let mut current_index : usize = 0;
-    state_array[current_index].initialize();
+    let mut current_index : usize = GameStateIndex::StartSelection as usize;
+    let mut black_board : Blackboard = Blackboard::default();
+    state_array[current_index].enter(&black_board);
     let graphics = GraphicsPainter::new();
 
     const DELTA_TIME: f32 = 0.02;
@@ -69,8 +71,9 @@ async fn main()  {
                 let delta_time = tick.ticks_passed as f32 * DELTA_TIME;
                 let res = state_array[current_index].update(delta_time);
                 if let Some(follow_index) = res {
+                    state_array[current_index].leave(&mut black_board);
                     current_index = follow_index as usize;
-                    state_array[current_index].initialize();
+                    state_array[current_index].enter(&black_board);
                 }
                 wc.request_redraw();
             }
