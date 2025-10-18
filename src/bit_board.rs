@@ -1,7 +1,7 @@
 use std::hash::{Hash, Hasher};
 use std::iter::Iterator;
 use std::mem;
-use crate::bit_board_coding::{get_position_iterator, get_possible_move};
+use crate::bit_board_coding::{flip_board, get_position_iterator, get_possible_move};
 
 #[derive(Clone)]
 pub struct BitBoard {
@@ -12,15 +12,30 @@ pub struct BitBoard {
 }
 
 
-impl Hash for BitBoard {
-    fn hash<H: Hasher>(&self, state: &mut H) {
-        let comb : u128 = ((self.own_stones as u128) << 64) | (self.opponent_stones as u128) ; 
-        comb.hash(state);
-    }
+/// This is the symmetry independent coding that can be used for the transposition table.
+#[derive(Hash, PartialEq, Eq)]
+pub struct SymmetryIndependentPosition {
+    own: u64,
+    opp: u64,
 }
+
 
 impl BitBoard {
     pub fn new() -> BitBoard { BitBoard { own_stones : 0, opponent_stones: 0 , computer_first: false } }
+
+
+    pub fn get_symmetry_independent_positions(&self) -> SymmetryIndependentPosition {
+        let flipped_own = flip_board(self.own_stones);
+        let flipped_opp = flip_board(self.opponent_stones);
+
+        // Sort lexicographically.
+        if self.own_stones < flipped_own
+            || (self.own_stones == flipped_own && self.opponent_stones < flipped_opp) {
+            SymmetryIndependentPosition { own: self.own_stones, opp: self.opponent_stones }
+        } else {
+            SymmetryIndependentPosition { own: flipped_own, opp: flipped_opp }
+        }
+    }
 
     /// Gets adjusted from the outside to get the coloring right.
     pub fn set_computer_first(&mut self, is_first:bool) { self.computer_first = is_first; }
@@ -54,7 +69,7 @@ impl BitBoard {
     {
         get_possible_move (self.own_stones | self.opponent_stones, column)
     }
-    
+
     /// Applies an encoded move has handed out by the function ['get_possible_move']
     pub fn apply_move(&mut self, coded_move : u64, is_computer : bool)
     {

@@ -85,6 +85,18 @@ pub fn print_static_values() {
 
 }
 
+pub fn  flip_board(input : u64) -> u64
+{
+    let mut result : u64 = (input&COLUMN_MASK[6]) >> 6;
+    result |= (input&COLUMN_MASK[5]) >> 4;
+    result |= (input&COLUMN_MASK[4]) >> 2;
+    result |= (input&COLUMN_MASK[3]);
+    result |= (input&COLUMN_MASK[2]) << 2;
+    result |= (input&COLUMN_MASK[1]) << 4;
+    result |= (input&COLUMN_MASK[0]) << 6;
+
+    return result;
+}
 /// Slow method only to be used for board drawing, gets all elements from the boards as coordinates.
 pub fn get_position_iterator(board: u64) -> impl Iterator<Item = (usize, usize)> {
     (0..7)
