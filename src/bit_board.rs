@@ -1,8 +1,10 @@
+use std::hash::{Hash, Hasher};
 use std::iter::Iterator;
 use std::mem;
 use crate::bit_board_coding::{get_position_iterator, get_possible_move};
 
-struct BitBoard {
+#[derive(Clone)]
+pub struct BitBoard {
     own_stones : u64,
     opponent_stones: u64,
     // The boards represents from the perspective of the computer in default.
@@ -10,15 +12,24 @@ struct BitBoard {
 }
 
 
-impl BitBoard {
-    fn new(computer_first: bool) -> BitBoard { BitBoard { own_stones : 0, opponent_stones: 0 , computer_first } }
+impl Hash for BitBoard {
+    fn hash<H: Hasher>(&self, state: &mut H) {
+        let comb : u128 = ((self.own_stones as u128) << 64) | (self.opponent_stones as u128) ; 
+        comb.hash(state);
+    }
+}
 
+impl BitBoard {
+    pub fn new() -> BitBoard { BitBoard { own_stones : 0, opponent_stones: 0 , computer_first: false } }
+
+    /// Gets adjusted from the outside to get the coloring right.
+    pub fn set_computer_first(&mut self, is_first:bool) { self.computer_first = is_first; }
     pub fn swap_players(&mut self) {
         mem::swap(&mut self.own_stones, &mut self.opponent_stones);
     }
 
     /// Returns a list of stones of positions and indications, if they are first player stones.
-    pub fn get_board_positioning(&self) -> impl Iterator<Item = (u8, u8, bool)> {
+    pub fn get_board_positioning(&self) -> impl Iterator<Item = (usize, usize, bool)> {
 
         let first_stones;
         let second_stones;
@@ -54,4 +65,18 @@ impl BitBoard {
             self.opponent_stones |= coded_move;
         }
     }
+
+    /// The apply move as intended to be used in the ai, as this will always refer to the own stone.
+    fn apply_move_active(&mut self, coded_move : u64)
+    {
+        self.own_stones |= coded_move;
+    }
+
+    /// Revokes the move as used in the ai.
+    fn revoke_move_active(&mut self, coded_move: u64)
+    {
+        self.own_stones ^= coded_move;
+    }
+
+
 }

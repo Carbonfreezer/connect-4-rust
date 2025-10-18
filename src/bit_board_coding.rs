@@ -86,7 +86,7 @@ pub fn print_static_values() {
 }
 
 /// Slow method only to be used for board drawing, gets all elements from the boards as coordinates.
-pub fn get_position_iterator(board: u64) -> impl Iterator<Item = (u8, u8)> {
+pub fn get_position_iterator(board: u64) -> impl Iterator<Item = (usize, usize)> {
     (0..7)
         .flat_map(|x| (0..6).map(move |y| (x, y)))
         .filter(move |&(x, y)| board & (1 << (x + 8 * y)) != 0)
@@ -100,4 +100,23 @@ pub fn get_possible_move(board : u64, column : usize) -> u64 {
         board )
         // Filter out the desired column.
         & COLUMN_MASK[column]
+}
+
+/// Gets an iterator for all possible moves for the ai.
+pub fn get_all_possible_moves(board : u64) -> impl Iterator<Item = u64> {
+    let comb = ((((board << DIR_INCREMENT[1]) & FULL_BOARD_MASK) | BOTTOM_FILL_MASK) ^
+        board );
+    (0..7).into_iter().map( move |x| comb & COLUMN_MASK[x] ).filter(|&x| x != 0)
+}
+
+/// Use only for interface stuff. Returns for an indicated move, the x,y coordinate where it will wind up.
+pub fn get_move_information(coded_move : u64) -> Option<(usize, usize)> {
+    for x in 0..7 {
+        for y in 0..6 {
+            if coded_move & (1 << (x + 8 * y)) > 0 {
+                return Some((x, y));
+            }
+        }
+    }
+    None
 }

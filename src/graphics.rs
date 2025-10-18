@@ -1,6 +1,6 @@
 use glume::gl;
 use glume::gl::types::*;
-
+use crate::bit_board::BitBoard;
 
 /// Represents color types we can draw elements with.
 pub enum Color
@@ -14,7 +14,7 @@ pub enum Color
 
 fn get_color_vector(color : Color) -> [f32; 3] {
     match color {
-        Color::Brown => [0.48,0.25,1.0],
+        Color::Brown => [0.48,0.25,0.0],
         Color::Yellow => [0.9,0.8,0.04],
         Color::LightYellow => [1.0,0.91,0.0],
         Color::Blue => [0.0,0.28,0.67],
@@ -204,7 +204,7 @@ impl GraphicsPainter {
     /// Draws the circle only into the stencil buffer. This is meant to be used in conjunction
     /// with the ['draw_rectangle_conditional_stencil'], that skips drawing the rectangle, where the
     /// mask has been drawn.
-    pub fn draw_circle_into_stencil(&self, radius : f32, position: [f32; 2]) {
+    fn draw_circle_into_stencil(&self, radius : f32, position: [f32; 2]) {
         let scale = [radius, radius];
 
         // Draw into stencil only.
@@ -233,7 +233,7 @@ impl GraphicsPainter {
 
     /// Draws a rectangle with the two corners but only at the positions where the stencil is not set.
     /// This is meant to be used with ['draw_circle_into_stencil']. 
-    pub fn draw_rectangle_conditional_stencil(&self, lower_left: [f32; 2] , upper_right: [f32; 2], color: Color) {
+    fn draw_rectangle_conditional_stencil(&self, lower_left: [f32; 2] , upper_right: [f32; 2], color: Color) {
         let translation = [(lower_left[0] + upper_right[0]) / 2.0,
             (lower_left[1] + upper_right[1]) / 2.0];
         let scale = [upper_right[0] - lower_left[0], upper_right[1] - lower_left[1]];
@@ -245,6 +245,34 @@ impl GraphicsPainter {
 
         unsafe {
             gl::StencilFunc(gl::ALWAYS, 0, 0xff);
+        }
+
+    }
+
+
+    const CIRCLE_RADIUS : f32 = 1.0 / 7.0 * 0.8;
+
+    /// Renders the board as is.
+    pub fn render_board(&self, board : &BitBoard) {
+
+        // First we draw the stencil circles.
+        for x in (0..7) {
+            for y in (0..6) {
+                let xpos = (x as f32 / 7.0) * 2.0 - 1.0 + 1.0 / 7.0;
+                let ypos = (y as f32 / 7.0) * 2.0 - 1.0 + 1.0 / 7.0;
+
+                self.draw_circle_into_stencil(Self::CIRCLE_RADIUS, [xpos,ypos]);
+            }
+        }
+
+        self.draw_rectangle_conditional_stencil([-1.0, -1.0], [1.0, 1.0 - 2.0 / 7.0], Color::Brown);
+
+        for (x,y,first) in board.get_board_positioning() {
+            let color = if first {Color::Yellow} else {Color::Blue};
+            self.draw_circle_normal(Self::CIRCLE_RADIUS,
+                                    [ (x as f32 / 7.0) * 2.0 - 1.0 + 1.0 / 7.0,
+                                        (y as f32 / 7.0) * 2.0 - 1.0 + 1.0 / 7.0]
+                                    , color);
         }
 
     }

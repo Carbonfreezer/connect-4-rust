@@ -24,18 +24,19 @@ fn get_distance_between(first_point: [f32;2 ], second_point: [f32;2]) -> f32 {
     (x*x + y*y).sqrt()
 }
 impl GameState for PlayerStartSelection {
-    fn enter(&mut self, _blackboard: &Blackboard) {
+    fn enter(&mut self, _: &Blackboard) {
         self.selection_happened = false;
         self.time_passed_after_selection = 0.0;
     }
 
     
-    fn update(&mut self, delta_time: f32) -> Option<GameStateIndex> {
+    fn update(&mut self, delta_time: f32, board : &mut Blackboard) -> Option<GameStateIndex> {
         if self.selection_happened {
             self.time_passed_after_selection += delta_time;
         }
         
-        if self.time_passed_after_selection >= 0.5 {
+        if self.time_passed_after_selection >= 0.3 {
+            board.game_board.set_computer_first( self.position_selected == 1);
             return Some(GameStateIndex::Start);
         }
         
@@ -59,7 +60,7 @@ impl GameState for PlayerStartSelection {
         
     }
 
-    fn draw(&mut self, graphics: &GraphicsPainter) {
+    fn draw(&mut self, graphics: &GraphicsPainter, _ : &Blackboard) {
         if self.selection_happened && (self.position_selected == 0) {
             graphics.draw_circle_normal(RADIUS, LEFT_CENTER, Color::LightYellow);
         }
@@ -75,7 +76,4 @@ impl GameState for PlayerStartSelection {
         }
     }
 
-    fn leave(&self, blackboard: &mut Blackboard) {
-        blackboard.is_computer_start_gamer = self.position_selected == 1;
-    }
 }

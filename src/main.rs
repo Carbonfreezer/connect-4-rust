@@ -8,6 +8,7 @@ mod bit_board_coding;
 use std::time::Duration;
 use glume::window::{Event, MouseButton};
 use glume::gl;
+use crate::bit_board::BitBoard;
 use crate::game_state::{generate_state_collection, Blackboard, GameStateIndex};
 use crate::graphics::GraphicsPainter;
 
@@ -37,7 +38,7 @@ async fn main()  {
 
     let mut state_array = generate_state_collection();
     let mut current_index : usize = GameStateIndex::StartSelection as usize;
-    let mut black_board : Blackboard = Blackboard::default();
+    let mut black_board : Blackboard = Blackboard::new();
     state_array[current_index].enter(&black_board);
     let graphics = GraphicsPainter::new();
 
@@ -63,7 +64,7 @@ async fn main()  {
                     gl::Clear(gl::COLOR_BUFFER_BIT | gl::STENCIL_BUFFER_BIT);
 
                 };
-                state_array[current_index].draw(&graphics);
+                state_array[current_index].draw(&graphics, &black_board);
             }
 
             Event::CursorMoved(x, y) => {
@@ -74,9 +75,8 @@ async fn main()  {
 
             Event::Tick(tick) => {
                 let delta_time = tick.ticks_passed as f32 * DELTA_TIME;
-                let res = state_array[current_index].update(delta_time);
+                let res = state_array[current_index].update(delta_time, &mut black_board);
                 if let Some(follow_index) = res {
-                    state_array[current_index].leave(&mut black_board);
                     current_index = follow_index as usize;
                     state_array[current_index].enter(&black_board);
                 }
