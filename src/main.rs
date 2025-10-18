@@ -2,6 +2,8 @@ mod game_state;
 mod start_state;
 mod graphics;
 mod player_start_selection;
+mod bit_board;
+mod bit_board_coding;
 
 use std::time::Duration;
 use glume::window::{Event, MouseButton};
@@ -11,6 +13,9 @@ use crate::graphics::GraphicsPainter;
 
 #[tokio::main]
 async fn main()  {
+
+    // bit_board_coding::print_static_values();
+
     let window_config = glume::window::WindowConfiguration {
         title: "4 Connect".to_string(),
         size: (800, 800),

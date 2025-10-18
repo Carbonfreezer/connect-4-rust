@@ -1,0 +1,57 @@
+use std::iter::Iterator;
+use std::mem;
+use crate::bit_board_coding::{get_position_iterator, get_possible_move};
+
+struct BitBoard {
+    own_stones : u64,
+    opponent_stones: u64,
+    // The boards represents from the perspective of the computer in default.
+    computer_first: bool
+}
+
+
+impl BitBoard {
+    fn new(computer_first: bool) -> BitBoard { BitBoard { own_stones : 0, opponent_stones: 0 , computer_first } }
+
+    pub fn swap_players(&mut self) {
+        mem::swap(&mut self.own_stones, &mut self.opponent_stones);
+    }
+
+    /// Returns a list of stones of positions and indications, if they are first player stones.
+    pub fn get_board_positioning(&self) -> impl Iterator<Item = (u8, u8, bool)> {
+
+        let first_stones;
+        let second_stones;
+        if self.computer_first {
+            first_stones = get_position_iterator(self.own_stones);
+            second_stones = get_position_iterator(self.opponent_stones);
+        }
+        else {
+            first_stones = get_position_iterator(self.opponent_stones);
+            second_stones = get_position_iterator(self.own_stones);
+        }
+
+        first_stones.into_iter().map(|(x,y)| (x,y,true)).chain(
+            second_stones.into_iter().map(|(x,y)| (x,y,false))
+        )
+
+    }
+    
+    /// Gets in general a possible move for the board, Returns eiter 0 if column is full or returns
+    /// the correctly set bit.
+    pub fn get_possible_move(&self, column: usize) -> u64
+    {
+        get_possible_move (self.own_stones | self.opponent_stones, column)
+    }
+    
+    /// Applies an encoded move has handed out by the function ['get_possible_move']
+    pub fn apply_move(&mut self, coded_move : u64, is_computer : bool)
+    {
+        if is_computer {
+            self.own_stones |= coded_move;
+        }
+        else { 
+            self.opponent_stones |= coded_move;
+        }
+    }
+}
