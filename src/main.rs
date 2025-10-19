@@ -1,10 +1,8 @@
 mod state_system;
 
 mod render_system;
-
-mod bit_board;
-mod bit_board_coding;
 mod debug_macros;
+mod board_logic;
 
 use state_system::*;
 

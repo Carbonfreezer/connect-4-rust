@@ -1,10 +1,10 @@
 //! This module contains the game board represented as a bit board.
 
-use crate::bit_board_coding::{
+use crate::board_logic::bit_board_coding::{
     BOARD_HEIGHT, BOARD_WIDTH, FULL_BOARD_MASK, check_for_winning, get_bit_representation,
     get_winning_board,
 };
-use crate::bit_board_coding::{flip_board, get_position_iterator, get_possible_move};
+use crate::board_logic::bit_board_coding::{flip_board, get_position_iterator, get_possible_move};
 use crate::debug_check_board_coordinates;
 use std::hash::Hash;
 use std::iter::Iterator;

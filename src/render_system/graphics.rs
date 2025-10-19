@@ -1,13 +1,10 @@
 //! This module contains everything to drawing boards, stones and simple ui elements.
 
-
-use crate::bit_board::BitBoard;
-use crate::bit_board_coding::{BOARD_HEIGHT, BOARD_WIDTH};
 use crate::{debug_check_board_coordinates, debug_check_draw_coordinates};
 use glume::gl;
 use glume::gl::types::*;
-
-
+use crate::board_logic::bit_board::BitBoard;
+use crate::board_logic::bit_board_coding::{BOARD_HEIGHT, BOARD_WIDTH};
 
 /// Represents color types we can draw elements with.
 #[derive(Clone, Copy, PartialEq, Eq, Debug)]

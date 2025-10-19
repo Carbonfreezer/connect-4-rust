@@ -2,7 +2,7 @@
 //! over which states can exchange information.
 
 
-use crate::bit_board::BitBoard;
+use crate::board_logic::bit_board::BitBoard;
 use crate::player_start_selection::PlayerStartSelection;
 use crate::render_system::graphics::GraphicsPainter;
 use crate::test_state::TestState;

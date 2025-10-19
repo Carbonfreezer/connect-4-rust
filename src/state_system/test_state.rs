@@ -1,6 +1,6 @@
 //! This is a dummy state for testing only during implementation.
 
-use crate::bit_board::GameResult;
+use crate::board_logic::bit_board::GameResult;
 use crate::game_state::{Blackboard, GameState, GameStateIndex};
 use crate::render_system::graphics::GraphicsPainter;
 use crate::render_system::stone_animator::StoneAnimator;

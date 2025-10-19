@@ -1,8 +1,8 @@
 //! This module is in charge of dropping stones into the game board.
 
-use crate::bit_board::BitBoard;
-use crate::bit_board_coding::BOARD_WIDTH;
+use crate::board_logic::bit_board_coding::BOARD_WIDTH;
 use crate::{debug_check_board_coordinates, debug_check_draw_coordinates};
+use crate::board_logic::bit_board::BitBoard;
 use crate::render_system::graphics::GraphicsPainter;
 
 /// An animator that takes care on animating a stone into the drawing arena.
