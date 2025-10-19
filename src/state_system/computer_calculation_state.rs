@@ -17,10 +17,8 @@ pub struct ComputerCalculationState {
 
 impl ComputerCalculationState {
     pub fn new() -> ComputerCalculationState {
-        let (result_sender, result_receiver): (mpsc::Sender<usize>, mpsc::Receiver<usize>) =
-            mpsc::channel();
-        let (task_sender, task_receiver): (mpsc::Sender<BitBoard>, mpsc::Receiver<BitBoard>) =
-            mpsc::channel();
+        let (result_sender, result_receiver) = mpsc::channel::<usize>();
+        let (task_sender, task_receiver) = mpsc::channel::<BitBoard>();
 
         // Kick of a worker thread, that runs in the background.
         thread::spawn(move || {
