@@ -9,7 +9,6 @@ use crate::debug_check_board_coordinates;
 use std::hash::Hash;
 use std::iter::Iterator;
 use std::mem;
-use std::path::Iter;
 
 /// Encodes the game result needed for the interface to the interface system.
 #[derive(Clone, Copy, PartialEq, Eq, Debug)]

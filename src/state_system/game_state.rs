@@ -8,7 +8,7 @@ use crate::test_state::TestState;
 
 /// All implemented game states get an index, with which they can refer to each other.
 pub enum GameStateIndex {
-    Start = 0,
+    TestState = 0,
     StartSelection = 1,
 }
 
