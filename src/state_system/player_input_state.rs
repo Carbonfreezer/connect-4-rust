@@ -38,12 +38,13 @@ impl GameState for PlayerInputState {
             if !self.animator.is_animating() {
                 black_board
                     .game_board
-                    .apply_move_on_column(self.slot_picked.unwrap(), false);
+                    .apply_move_on_column( black_board.player_choice, false);
                 return Some(GameStateIndex::GameOverState);
             }
         }
 
         if let Some(slot_choice) = self.slot_picked {
+            
             // We have chosen a slot.
             self.slot_picked = None;
 
@@ -59,7 +60,7 @@ impl GameState for PlayerInputState {
             black_board.game_board.revoke_move(coded_move, false);
             // When it is not game over we can directly go to the computer execution.
             if !game_over {
-                return Some(GameStateIndex::ComputerExecutionState);
+                return Some(GameStateIndex::ComputerCalculationState);
             }
             self.transition_to_game_over = true;
             self.animator

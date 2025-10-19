@@ -16,7 +16,7 @@ pub struct GameOverState {
 
 impl GameOverState {
     pub fn new() -> GameOverState {
-        let central_position = GraphicsPainter::get_drawing_coordinates_above_column(7);
+        let central_position = GraphicsPainter::get_drawing_coordinates_above_column(3);
         let lower_position = [
             central_position[0] - GraphicsPainter::CIRCLE_RADIUS,
             central_position[1] - GraphicsPainter::CIRCLE_RADIUS,

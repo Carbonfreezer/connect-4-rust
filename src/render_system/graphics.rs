@@ -21,11 +21,11 @@ pub enum Color {
 fn get_color_vector(color: Color) -> [f32; 3] {
     match color {
         Color::Brown => [0.48, 0.25, 0.0],
-        Color::Yellow => [0.85, 0.65, 0.12],
+        Color::Yellow => [0.75, 0.55, 0.06],
         Color::LightYellow => [1.0, 0.91, 0.0],
         Color::Blue => [0.0, 0.28, 0.67],
         Color::LightBlue => [0.0, 0.58, 1.0],
-        Color::Grey => [0.01, 0.19, 0.12],
+        Color::Grey => [0.25, 0.25, 0.25],
     }
 }
 

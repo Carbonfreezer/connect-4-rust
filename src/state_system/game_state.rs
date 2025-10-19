@@ -6,6 +6,7 @@ use crate::computer_move_execution_state::ComputerMoveExecutionState;
 use crate::game_over_state::GameOverState;
 use crate::player_start_selection::PlayerStartSelection;
 use crate::render_system::graphics::GraphicsPainter;
+use crate::state_system::computer_calculation_state::ComputerCalculationState;
 use crate::state_system::player_input_state::PlayerInputState;
 use crate::test_state::TestState;
 
@@ -26,7 +27,7 @@ pub fn generate_state_collection() -> Vec<Box<dyn GameState>> {
         Box::new(PlayerStartSelection::new()),
         Box::new(ComputerMoveExecutionState::new()),
         Box::new(PlayerInputState::new()),
-        // TODO: One missing here.
+        Box::new(ComputerCalculationState::new()),
         Box::new(GameOverState::new()),
     ];
     result
