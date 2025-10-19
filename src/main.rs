@@ -1,21 +1,19 @@
 mod state_system;
 
-mod graphics;
 mod bit_board;
 mod bit_board_coding;
-
+mod graphics;
 
 use state_system::*;
 
-use std::time::Duration;
-use glume::window::{Event, MouseButton};
-use glume::gl;
-use crate::game_state::{generate_state_collection, Blackboard, GameStateIndex};
+use crate::game_state::{Blackboard, GameStateIndex, generate_state_collection};
 use crate::graphics::GraphicsPainter;
+use glume::gl;
+use glume::window::{Event, MouseButton};
+use std::time::Duration;
 
 #[tokio::main]
-async fn main()  {
-
+async fn main() {
     // bit_board_coding::print_static_values();
 
     let window_config = glume::window::WindowConfiguration {
@@ -26,7 +24,6 @@ async fn main()  {
 
     let window = window_config.build_window();
 
-
     // after the window is created, we can call OpenGL functions, not before
     unsafe {
         gl::Enable(gl::DEBUG_OUTPUT);
@@ -34,12 +31,11 @@ async fn main()  {
     }
 
     let mut screen_extension = [0.0, 0.0];
-    let mut adjusted_cursor_pos= [0.0, 0.0];
-
+    let mut adjusted_cursor_pos = [0.0, 0.0];
 
     let mut state_array = generate_state_collection();
-    let mut current_index : usize = GameStateIndex::StartSelection as usize;
-    let mut black_board : Blackboard = Blackboard::new();
+    let mut current_index: usize = GameStateIndex::StartSelection as usize;
+    let mut black_board: Blackboard = Blackboard::new();
     state_array[current_index].enter(&black_board);
     let graphics = GraphicsPainter::new();
 
@@ -64,15 +60,15 @@ async fn main()  {
                 unsafe {
                     gl::ClearColor(0.0, 0.0, 0.0, 1.0);
                     gl::Clear(gl::COLOR_BUFFER_BIT | gl::STENCIL_BUFFER_BIT);
-
                 };
                 state_array[current_index].draw(&graphics, &black_board);
             }
 
             Event::CursorMoved(x, y) => {
-                adjusted_cursor_pos =  [ 2.0_f32 * x / screen_extension[0] - 1.0_f32,
-                1.0 - 2.0_f32 * y / screen_extension[1]];
-
+                adjusted_cursor_pos = [
+                    2.0_f32 * x / screen_extension[0] - 1.0_f32,
+                    1.0 - 2.0_f32 * y / screen_extension[1],
+                ];
             }
 
             Event::Tick(tick) => {
@@ -84,8 +80,6 @@ async fn main()  {
                 }
                 wc.request_redraw();
             }
-
-
 
             Event::MouseButtonPressed(button) => {
                 wc.request_redraw();

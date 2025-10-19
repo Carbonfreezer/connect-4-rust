@@ -13,17 +13,15 @@
 //!  
 //! The number in parentheses are sentinel guards.   
 
-
 /// The width of the board.
 pub const BOARD_WIDTH: usize = 7;
 
 /// The height of the board.
-pub const BOARD_HEIGHT : usize = 6;
+pub const BOARD_HEIGHT: usize = 6;
 
-
-/// Verifier macros for coordinates, can be used with x and y coordinates for a position, or a 
+/// Verifier macros for coordinates, can be used with x and y coordinates for a position, or a
 /// column only. Checks for the type to be usize and if they do not exceed the desired range,
-/// 
+///
 /// # Example
 /// ```
 /// let x : usize = 2;
@@ -40,7 +38,10 @@ macro_rules! debug_check_coordinates {
         debug_assert!(
             x < BOARD_WIDTH && y < BOARD_HEIGHT,
             "Illegal coordinates: x={}, y={} (valid: x < {}, y < {})",
-            x, y, BOARD_WIDTH, BOARD_HEIGHT
+            x,
+            y,
+            BOARD_WIDTH,
+            BOARD_HEIGHT
         );
     }};
 
@@ -49,11 +50,11 @@ macro_rules! debug_check_coordinates {
         debug_assert!(
             x < BOARD_WIDTH,
             "Illegal column: {} (valid: col < {})",
-            x, BOARD_WIDTH
+            x,
+            BOARD_WIDTH
         );
-   }}
+    }};
 }
-
 
 /// Gets a mask, where the bit at the indicated position is set.
 const fn get_bit_representation(x: usize, y: usize) -> u64 {
@@ -113,25 +114,22 @@ pub const FULL_BOARD_MASK: u64 = get_full_board_mask();
 /// Flags the bottom line helpful to determine possible legal moves.
 pub const BOTTOM_FILL_MASK: u64 = get_bottom_filler_mask();
 
-
 /// Bit shift increment:  
 /// 0  1   2  
 /// \  |  /  
 ///    X -  3  
 pub const DIR_INCREMENT: [u8; 4] = [7, 8, 9, 1];
 
-
 /// Method to mirror a board along the y-axis.
-pub fn  flip_board(input : u64) -> u64
-{
-    let mut result : u64;
-    result =  (input&COLUMN_MASK[6]) >> 6;
-    result |= (input&COLUMN_MASK[5]) >> 4;
-    result |= (input&COLUMN_MASK[4]) >> 2;
-    result |= input&COLUMN_MASK[3];
-    result |= (input&COLUMN_MASK[2]) << 2;
-    result |= (input&COLUMN_MASK[1]) << 4;
-    result |= (input&COLUMN_MASK[0]) << 6;
+pub fn flip_board(input: u64) -> u64 {
+    let mut result: u64;
+    result = (input & COLUMN_MASK[6]) >> 6;
+    result |= (input & COLUMN_MASK[5]) >> 4;
+    result |= (input & COLUMN_MASK[4]) >> 2;
+    result |= input & COLUMN_MASK[3];
+    result |= (input & COLUMN_MASK[2]) << 2;
+    result |= (input & COLUMN_MASK[1]) << 4;
+    result |= (input & COLUMN_MASK[0]) << 6;
 
     return result;
 }
@@ -144,8 +142,8 @@ pub fn get_position_iterator(board: u64) -> impl Iterator<Item = (usize, usize)>
 
 /// Gets a  representation, where the bit for the specific column is set where a move would wind up.
 /// If it is not possible to make move in that column, a 0 is returned.
-pub fn get_possible_move(board : u64, column : usize) -> u64 {
-    debug_check_coordinates!(col: column); 
+pub fn get_possible_move(board: u64, column: usize) -> u64 {
+    debug_check_coordinates!(col: column);
     // Safely upshifted board extended with a bottom row.
     ((((board << DIR_INCREMENT[1]) & FULL_BOARD_MASK) | BOTTOM_FILL_MASK) ^
         // The original board.
@@ -155,17 +153,19 @@ pub fn get_possible_move(board : u64, column : usize) -> u64 {
 }
 
 /// Gets an iterator for all possible moves for the ai.
-pub fn get_all_possible_moves(board : u64) -> impl Iterator<Item = u64> {
-    let comb = (((board << DIR_INCREMENT[1]) & FULL_BOARD_MASK) | BOTTOM_FILL_MASK) ^
-        board ;
-    (0..BOARD_WIDTH).into_iter().map( move |x| comb & COLUMN_MASK[x] ).filter(|&x| x != 0)
+pub fn get_all_possible_moves(board: u64) -> impl Iterator<Item = u64> {
+    let comb = (((board << DIR_INCREMENT[1]) & FULL_BOARD_MASK) | BOTTOM_FILL_MASK) ^ board;
+    (0..BOARD_WIDTH)
+        .into_iter()
+        .map(move |x| comb & COLUMN_MASK[x])
+        .filter(|&x| x != 0)
 }
 
 /// Use only for interface stuff. Returns for an indicated move, the x,y coordinate where it will wind up.
-pub fn get_move_information(coded_move : u64) -> Option<(usize, usize)> {
+pub fn get_move_information(coded_move: u64) -> Option<(usize, usize)> {
     for x in 0..BOARD_WIDTH {
         for y in 0..BOARD_HEIGHT {
-            debug_check_coordinates!(x,y);
+            debug_check_coordinates!(x, y);
             if coded_move & (1 << (x + 8 * y)) > 0 {
                 return Some((x, y));
             }

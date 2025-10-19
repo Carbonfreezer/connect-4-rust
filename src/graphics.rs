@@ -1,3 +1,6 @@
+//! This module contains everything to drawing boards, stones and simple ui elements.
+
+
 use crate::bit_board::BitBoard;
 use crate::bit_board_coding::{BOARD_HEIGHT, BOARD_WIDTH};
 use crate::debug_check_coordinates;
