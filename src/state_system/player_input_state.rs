@@ -24,7 +24,6 @@ impl PlayerInputState {
 
 impl GameState for PlayerInputState {
     fn enter(&mut self, _: &Blackboard) {
-        self.animator.stop_animating();
         self.slot_picked = None;
         self.transition_to_game_over = false;
     }

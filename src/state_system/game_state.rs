@@ -8,22 +8,19 @@ use crate::player_start_selection::PlayerStartSelection;
 use crate::render_system::graphics::GraphicsPainter;
 use crate::state_system::computer_calculation_state::ComputerCalculationState;
 use crate::state_system::player_input_state::PlayerInputState;
-use crate::test_state::TestState;
 
 /// All implemented game states get an index, with which they can refer to each other.
 pub enum GameStateIndex {
-    TestState = 0,
-    StartSelection = 1,
-    ComputerExecutionState = 2,
-    PlayerInputState = 3,
-    ComputerCalculationState = 4,
-    GameOverState = 5,
+    StartSelection = 0,
+    ComputerExecutionState = 1,
+    PlayerInputState = 2,
+    ComputerCalculationState = 3,
+    GameOverState = 4,
 }
 
 /// Generates a vector with all the required game states.
 pub fn generate_state_collection() -> Vec<Box<dyn GameState>> {
     let result: Vec<Box<dyn GameState>> = vec![
-        Box::new(TestState::new()),
         Box::new(PlayerStartSelection::new()),
         Box::new(ComputerMoveExecutionState::new()),
         Box::new(PlayerInputState::new()),

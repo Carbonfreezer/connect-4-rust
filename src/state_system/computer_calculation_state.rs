@@ -28,9 +28,7 @@ impl GameState for ComputerCalculationState {
         // Pre make the player move.
         local_board.apply_move_on_column(black_board.player_choice, false);
         let (tx, rx) = oneshot::channel();
-
         self.receiver = Some(rx);
-
         // Kick of the calculation.
         tokio::spawn(async move {
            let mut ai = MoveAI::new(local_board);
@@ -38,7 +36,6 @@ impl GameState for ComputerCalculationState {
         });
 
         // Start the animation.
-        self.animator.stop_animating();
         self.animator.start_animating(&black_board.game_board, black_board.player_choice, false );
     }
 

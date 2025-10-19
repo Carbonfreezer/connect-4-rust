@@ -23,7 +23,6 @@ impl GameState for ComputerMoveExecutionState {
     /// We read out the move we want to make.
     fn enter(&mut self, black_board: &Blackboard) {
         self.slot_picked = black_board.computer_choice;
-        self.animator.stop_animating();
         self.animator
             .start_animating(&black_board.game_board, self.slot_picked, true);
     }
