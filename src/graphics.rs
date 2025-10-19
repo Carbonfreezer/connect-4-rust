@@ -250,18 +250,22 @@ impl GraphicsPainter {
     }
 
 
+    /// The radius with which we want to draw the stones in the below function.
     const CIRCLE_RADIUS : f32 = 1.0 / 7.0 * 0.8;
+    
+    /// Returns the drawing coordinates for an indicated stone position.
+    fn get_drawing_coordinates(x_stone : usize, y_stone : usize) -> [f32;2] {
+        [(x_stone as f32 / 7.0) * 2.0 - 1.0 + 1.0 / 7.0,
+         (y_stone as f32 / 7.0) * 2.0 - 1.0 + 1.0 / 7.0]
+    }
 
-    /// Renders the board as is.
+    /// Renders the board as is with all the stones in there.
     pub fn render_board(&self, board : &BitBoard) {
 
         // First we draw the stencil circles.
         for x in 0..7 {
             for y in 0..6 {
-                let xpos = (x as f32 / 7.0) * 2.0 - 1.0 + 1.0 / 7.0;
-                let ypos = (y as f32 / 7.0) * 2.0 - 1.0 + 1.0 / 7.0;
-
-                self.draw_circle_into_stencil(Self::CIRCLE_RADIUS, [xpos,ypos]);
+                self.draw_circle_into_stencil(Self::CIRCLE_RADIUS, Self::get_drawing_coordinates(x,y));
             }
         }
 
@@ -269,10 +273,7 @@ impl GraphicsPainter {
 
         for (x,y,first) in board.get_board_positioning() {
             let color = if first {Color::Yellow} else {Color::Blue};
-            self.draw_circle_normal(Self::CIRCLE_RADIUS,
-                                    [ (x as f32 / 7.0) * 2.0 - 1.0 + 1.0 / 7.0,
-                                        (y as f32 / 7.0) * 2.0 - 1.0 + 1.0 / 7.0]
-                                    , color);
+            self.draw_circle_normal(Self::CIRCLE_RADIUS, Self::get_drawing_coordinates(x,y),  color);
         }
 
     }
