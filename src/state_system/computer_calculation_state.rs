@@ -7,7 +7,7 @@ use crate::board_logic::move_ai::MoveAI;
 use crate::render_system::graphics::GraphicsPainter;
 use crate::state_system::game_state::{Blackboard, GameState, GameStateIndex};
 
-pub(crate) struct ComputerCalculationState {
+pub struct ComputerCalculationState {
     animator: StoneAnimator,
     receiver: Option<oneshot::Receiver<usize>>
 }
