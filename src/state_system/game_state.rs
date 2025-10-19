@@ -1,7 +1,6 @@
 //! This module contains the trait of all states and contains a blackboard,
 //! over which states can exchange information.
 
-
 use crate::board_logic::bit_board::BitBoard;
 use crate::player_start_selection::PlayerStartSelection;
 use crate::render_system::graphics::GraphicsPainter;

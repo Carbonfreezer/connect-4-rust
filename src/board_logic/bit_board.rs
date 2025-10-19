@@ -150,7 +150,7 @@ impl BitBoard {
     /// Checks if we have a draw situation under the assumption that we do not have a winning
     /// one.
     pub fn check_for_draw_if_not_winning(&self) -> bool {
-        let compound = (self.opponent_stones | self.own_stones);
+        let compound = self.opponent_stones | self.own_stones;
         compound == FULL_BOARD_MASK
     }
 

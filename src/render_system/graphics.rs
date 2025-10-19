@@ -1,10 +1,10 @@
 //! This module contains everything to drawing boards, stones and simple ui elements.
 
+use crate::board_logic::bit_board::BitBoard;
+use crate::board_logic::bit_board_coding::{BOARD_HEIGHT, BOARD_WIDTH};
 use crate::{debug_check_board_coordinates, debug_check_draw_coordinates};
 use glume::gl;
 use glume::gl::types::*;
-use crate::board_logic::bit_board::BitBoard;
-use crate::board_logic::bit_board_coding::{BOARD_HEIGHT, BOARD_WIDTH};
 
 /// Represents color types we can draw elements with.
 #[derive(Clone, Copy, PartialEq, Eq, Debug)]
@@ -304,7 +304,6 @@ impl GraphicsPainter {
         ]
     }
 
-
     /// Gets a painting position above the column.
     pub fn get_drawing_coordinates_above_column(column: usize) -> [f32; 2] {
         debug_check_board_coordinates!(col: column);
@@ -343,13 +342,20 @@ impl GraphicsPainter {
             );
         }
     }
-    
-    
+
     /// Renders the indicated stones into the stone array with highlighted color. Indicates
-    /// if this is the first player who is winning to pick the right color. 
-    pub fn render_winning_stones(&self, is_first_player_winning: bool, list_of_positions : &Vec<(usize, usize)>) {
-        let color = if is_first_player_winning { Color::LightYellow } else { Color::LightBlue };
-        
+    /// if this is the first player who is winning to pick the right color.
+    pub fn render_winning_stones(
+        &self,
+        is_first_player_winning: bool,
+        list_of_positions: &Vec<(usize, usize)>,
+    ) {
+        let color = if is_first_player_winning {
+            Color::LightYellow
+        } else {
+            Color::LightBlue
+        };
+
         for (column, row) in list_of_positions {
             self.draw_circle_normal(
                 Self::CIRCLE_RADIUS,
@@ -360,9 +366,16 @@ impl GraphicsPainter {
     }
 
     /// Draws the stone at the indicated coordinates, this is meant for drawing an animated stone.
-    pub fn draw_stone_at_coordinates(&self, position: [f32;2], is_first_player: bool)
-    {
+    pub fn draw_stone_at_coordinates(&self, position: [f32; 2], is_first_player: bool) {
         debug_check_draw_coordinates!(position);
-        self.draw_circle_normal(Self::CIRCLE_RADIUS, position, if is_first_player { Color::Yellow } else { Color::Blue })
+        self.draw_circle_normal(
+            Self::CIRCLE_RADIUS,
+            position,
+            if is_first_player {
+                Color::Yellow
+            } else {
+                Color::Blue
+            },
+        )
     }
 }

@@ -2,7 +2,7 @@
 
 /// Macro to check if the coordinates are in the -1..1 range.
 /// And checks, that it is a 2d float vector.
-/// 
+///
 /// # Example
 /// ```
 /// let x : [f32;2] = [-0.1, 0.2];
@@ -14,8 +14,7 @@ macro_rules! debug_check_draw_coordinates {
         // Forces f32 slice at compile time.
         let [x, y]: [f32; 2] = $coord;
         debug_assert!(
-            (-1.0 <= x) && (x <= 1.0) &&
-            (-1.0 <= y) && (y <= 1.0),
+            (-1.0 <= x) && (x <= 1.0) && (-1.0 <= y) && (y <= 1.0),
             "Illegal coordinates: x={}, y={} must be between -1.0 and 1.0",
             x,
             y,
