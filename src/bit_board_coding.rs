@@ -1,5 +1,3 @@
-use std::path::Iter;
-
 
 /// Uses a bit board along the following structure:
 /// (48) (49) (50) (51) (52) (53) (54) (55)
@@ -13,84 +11,78 @@ use std::path::Iter;
 /// The number in parantheses are sentinal guards.
 
 
-
-/// Here wee define a couple of masks that are helpful.
-fn get_bit_representation(x: u8, y: u8) -> u64 {
+// Here wee define a couple of masks that are helpful.
+const fn get_bit_representation(x: u8, y: u8) -> u64 {
     1 << (x + 8 * y)
 }
 
+const fn get_column_mask(col: u8) -> u64 {
+    let mut result: u64 = 0;
+    let mut y = 0;
+    while y < 6 {  // for-loops sind in const fn noch nicht stabil
+        result |= get_bit_representation(col, y);
+        y += 1;
+    }
+    result
+}
+
 /// Helpful to mask out the sentinel.
-fn get_full_board() -> u64 {
+const fn get_full_board_mask() -> u64 {
     let mut result: u64 = 0;
-
-    for x in 0..7 {
-        for y in 0..6 {
-            result = result | get_bit_representation(x, y);
+    let mut x = 0;
+    while x < 7 {
+        let mut y = 0;
+        while y < 6 {
+            result |= get_bit_representation(x, y);
+            y += 1;
         }
+        x += 1;
     }
-
     result
 }
 
-/// Helpful to mask out one column.
-
-fn get_column_mask(col: u8) -> u64 {
+const fn get_bottom_filler_mask() -> u64 {
     let mut result: u64 = 0;
-    for y in 0..6 {
-        result = result | get_bit_representation(col, y);
-    }
-
-    result
-}
-
-
-fn get_bottom_filler_mask() -> u64 {
-    let mut result: u64 = 0;
-    for x in 0..7 {
-        result = result | get_bit_representation(x, 0);
+    let mut x = 0;
+    while x < 7 {
+        result |= get_bit_representation(x, 0);
+        x += 1;
     }
     result
 }
 
 /// Flags out the seven different columns.
-pub const  COLUMN_MASK: [u64; 7] = [0x10101010101,
-                                    0x20202020202,
-                                    0x40404040404,
-                                    0x80808080808,
-                                    0x101010101010,
-                                    0x202020202020,
-                                    0x404040404040];
+pub const COLUMN_MASK: [u64; 7] = [
+    get_column_mask(0),
+    get_column_mask(1),
+    get_column_mask(2),
+    get_column_mask(3),
+    get_column_mask(4),
+    get_column_mask(5),
+    get_column_mask(6),
+];
 
 /// Flags the full board except for the sentinel.
-pub const  FULL_BOARD_MASK: u64 =  0x7f7f7f7f7f7f;
-
+pub const FULL_BOARD_MASK: u64 = get_full_board_mask();
 /// Flags the bottom line helpful to determine possible legal moves.
-pub static  BOTTOM_FILL_MASK: u64 = 0x7f;
+pub const BOTTOM_FILL_MASK: u64 = get_bottom_filler_mask();
+
 
 /// Bit shift increment:
 /// 0  1   2
 /// \  |  /
-///   X -  3
-pub static DIR_INCREMENT: [u8; 4] = [7, 8, 9, 1];
+///    X -  3
+pub const DIR_INCREMENT: [u8; 4] = [7, 8, 9, 1];
 
-/// Initializes the static values from the but board.
-pub fn print_static_values() {
-        println!("Full board {:#x}", get_full_board());
-        println!("Bottom filler {:#x}", get_bottom_filler_mask());
 
-        for i  in 0_u8..7_u8 {
-            println!("Column mask {} : {:#x}", i, get_column_mask(i as u8));
-
-        }
-
-}
-
+/// Method to mirror a board along the y-axis.
 pub fn  flip_board(input : u64) -> u64
 {
-    let mut result : u64 = (input&COLUMN_MASK[6]) >> 6;
+    let mut result : u64;
+    result =  (input&COLUMN_MASK[6]) >> 6;
     result |= (input&COLUMN_MASK[5]) >> 4;
     result |= (input&COLUMN_MASK[4]) >> 2;
-    result |= (input&COLUMN_MASK[3]);
+    result |= input&COLUMN_MASK[3];
     result |= (input&COLUMN_MASK[2]) << 2;
     result |= (input&COLUMN_MASK[1]) << 4;
     result |= (input&COLUMN_MASK[0]) << 6;
@@ -104,7 +96,8 @@ pub fn get_position_iterator(board: u64) -> impl Iterator<Item = (usize, usize)>
         .filter(move |&(x, y)| board & (1 << (x + 8 * y)) != 0)
 }
 
-
+/// Gets a  representation, where the bit for the specific column is set where a move would wind up.
+/// If it is not possible to make move in that column, a 0 is returned.
 pub fn get_possible_move(board : u64, column : usize) -> u64 {
     // Safely upshifted board extended with a bottom row.
     ((((board << DIR_INCREMENT[1]) & FULL_BOARD_MASK) | BOTTOM_FILL_MASK) ^
@@ -116,8 +109,8 @@ pub fn get_possible_move(board : u64, column : usize) -> u64 {
 
 /// Gets an iterator for all possible moves for the ai.
 pub fn get_all_possible_moves(board : u64) -> impl Iterator<Item = u64> {
-    let comb = ((((board << DIR_INCREMENT[1]) & FULL_BOARD_MASK) | BOTTOM_FILL_MASK) ^
-        board );
+    let comb = (((board << DIR_INCREMENT[1]) & FULL_BOARD_MASK) | BOTTOM_FILL_MASK) ^
+        board ;
     (0..7).into_iter().map( move |x| comb & COLUMN_MASK[x] ).filter(|&x| x != 0)
 }
 

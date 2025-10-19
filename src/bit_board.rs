@@ -1,4 +1,4 @@
-use std::hash::{Hash, Hasher};
+use std::hash::{Hash};
 use std::iter::Iterator;
 use std::mem;
 use crate::bit_board_coding::{flip_board, get_position_iterator, get_possible_move};
@@ -24,6 +24,9 @@ impl BitBoard {
     pub fn new() -> BitBoard { BitBoard { own_stones : 0, opponent_stones: 0 , computer_first: false } }
 
 
+    
+    /// Generates a structure that looks the same with its symmetrically identical board. 
+    /// This is meant to be used for the transposition table.  
     pub fn get_symmetry_independent_position(&self) -> SymmetryIndependentPosition {
         let flipped_own = flip_board(self.own_stones);
         let flipped_opp = flip_board(self.opponent_stones);

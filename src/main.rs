@@ -8,7 +8,6 @@ mod bit_board_coding;
 use std::time::Duration;
 use glume::window::{Event, MouseButton};
 use glume::gl;
-use crate::bit_board::BitBoard;
 use crate::game_state::{generate_state_collection, Blackboard, GameStateIndex};
 use crate::graphics::GraphicsPainter;
 

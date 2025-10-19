@@ -1,6 +1,5 @@
-use crate::bit_board::BitBoard;
 use crate::game_state::{Blackboard, GameState, GameStateIndex};
-use crate::graphics::{Color, GraphicsPainter};
+use crate::graphics::{ GraphicsPainter};
 
 pub struct StartState
 {
@@ -24,7 +23,7 @@ impl GameState for StartState {
             self.slot_picked = None;
 
             let mov = board.game_board.get_possible_move(pos);
-            if (mov != 0) {
+            if mov != 0 {
                 board.game_board.apply_move(mov, false);
             }
         }

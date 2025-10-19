@@ -256,8 +256,8 @@ impl GraphicsPainter {
     pub fn render_board(&self, board : &BitBoard) {
 
         // First we draw the stencil circles.
-        for x in (0..7) {
-            for y in (0..6) {
+        for x in 0..7 {
+            for y in 0..6 {
                 let xpos = (x as f32 / 7.0) * 2.0 - 1.0 + 1.0 / 7.0;
                 let ypos = (y as f32 / 7.0) * 2.0 - 1.0 + 1.0 / 7.0;
 
