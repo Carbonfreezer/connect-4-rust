@@ -1,6 +1,7 @@
 use glume::gl;
 use glume::gl::types::*;
 use crate::bit_board::BitBoard;
+use crate::bit_board_coding::{BOARD_HEIGHT, BOARD_WIDTH};
 
 /// Represents color types we can draw elements with.
 pub enum Color
@@ -263,8 +264,8 @@ impl GraphicsPainter {
     pub fn render_board(&self, board : &BitBoard) {
 
         // First we draw the stencil circles.
-        for x in 0..7 {
-            for y in 0..6 {
+        for x in 0..BOARD_WIDTH {
+            for y in 0..BOARD_HEIGHT {
                 self.draw_circle_into_stencil(Self::CIRCLE_RADIUS, Self::get_drawing_coordinates(x,y));
             }
         }

@@ -11,15 +11,23 @@
 /// The number in parantheses are sentinal guards.
 
 
-// Here wee define a couple of masks that are helpful.
-const fn get_bit_representation(x: u8, y: u8) -> u64 {
+/// The width of the board.
+pub const BOARD_WIDTH: usize = 7;
+
+/// The height of the board.
+pub const BOARD_HEIGHT : usize = 6;
+
+
+
+/// Here wee define a couple of masks that are helpful.
+const fn get_bit_representation(x: usize, y: usize) -> u64 {
     1 << (x + 8 * y)
 }
 
-const fn get_column_mask(col: u8) -> u64 {
+const fn get_column_mask(col: usize) -> u64 {
     let mut result: u64 = 0;
     let mut y = 0;
-    while y < 6 {  // for-loops sind in const fn noch nicht stabil
+    while y < BOARD_HEIGHT {  
         result |= get_bit_representation(col, y);
         y += 1;
     }
@@ -30,9 +38,9 @@ const fn get_column_mask(col: u8) -> u64 {
 const fn get_full_board_mask() -> u64 {
     let mut result: u64 = 0;
     let mut x = 0;
-    while x < 7 {
+    while x < BOARD_WIDTH {
         let mut y = 0;
-        while y < 6 {
+        while y < BOARD_HEIGHT {
             result |= get_bit_representation(x, y);
             y += 1;
         }
@@ -44,7 +52,7 @@ const fn get_full_board_mask() -> u64 {
 const fn get_bottom_filler_mask() -> u64 {
     let mut result: u64 = 0;
     let mut x = 0;
-    while x < 7 {
+    while x < BOARD_WIDTH {
         result |= get_bit_representation(x, 0);
         x += 1;
     }
@@ -91,8 +99,8 @@ pub fn  flip_board(input : u64) -> u64
 }
 /// Slow method only to be used for board drawing, gets all elements from the boards as coordinates.
 pub fn get_position_iterator(board: u64) -> impl Iterator<Item = (usize, usize)> {
-    (0..7)
-        .flat_map(|x| (0..6).map(move |y| (x, y)))
+    (0..BOARD_WIDTH)
+        .flat_map(|x| (0..BOARD_HEIGHT).map(move |y| (x, y)))
         .filter(move |&(x, y)| board & (1 << (x + 8 * y)) != 0)
 }
 
@@ -111,13 +119,13 @@ pub fn get_possible_move(board : u64, column : usize) -> u64 {
 pub fn get_all_possible_moves(board : u64) -> impl Iterator<Item = u64> {
     let comb = (((board << DIR_INCREMENT[1]) & FULL_BOARD_MASK) | BOTTOM_FILL_MASK) ^
         board ;
-    (0..7).into_iter().map( move |x| comb & COLUMN_MASK[x] ).filter(|&x| x != 0)
+    (0..BOARD_WIDTH).into_iter().map( move |x| comb & COLUMN_MASK[x] ).filter(|&x| x != 0)
 }
 
 /// Use only for interface stuff. Returns for an indicated move, the x,y coordinate where it will wind up.
 pub fn get_move_information(coded_move : u64) -> Option<(usize, usize)> {
-    for x in 0..7 {
-        for y in 0..6 {
+    for x in 0..BOARD_WIDTH {
+        for y in 0..BOARD_HEIGHT {
             if coded_move & (1 << (x + 8 * y)) > 0 {
                 return Some((x, y));
             }
