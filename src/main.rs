@@ -3,6 +3,8 @@ mod state_system;
 mod bit_board;
 mod bit_board_coding;
 mod graphics;
+mod stone_animator;
+mod debug_macros;
 
 use state_system::*;
 

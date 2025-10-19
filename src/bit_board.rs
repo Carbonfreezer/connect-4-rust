@@ -1,6 +1,6 @@
-use crate::bit_board_coding::BOARD_WIDTH;
+use crate::bit_board_coding::{get_bit_representation, BOARD_HEIGHT, BOARD_WIDTH};
 use crate::bit_board_coding::{flip_board, get_position_iterator, get_possible_move};
-use crate::debug_check_coordinates;
+use crate::debug_check_board_coordinates;
 use std::hash::Hash;
 use std::iter::Iterator;
 use std::mem;
@@ -55,6 +55,12 @@ impl BitBoard {
     pub fn set_computer_first(&mut self, is_first: bool) {
         self.computer_first = is_first;
     }
+    
+    /// Checks if the computer makes the first move.
+    pub fn get_computer_first(&self) -> bool {
+        self.computer_first
+    }
+    
     pub fn swap_players(&mut self) {
         mem::swap(&mut self.own_stones, &mut self.opponent_stones);
     }
@@ -80,9 +86,24 @@ impl BitBoard {
     /// Gets in general a possible move for the board, Returns eiter 0 if column is full or returns
     /// the correctly set bit.
     pub fn get_possible_move(&self, column: usize) -> u64 {
-        debug_check_coordinates!(col: column);
+        debug_check_board_coordinates!(col: column);
         get_possible_move(self.own_stones | self.opponent_stones, column)
     }
+    
+    /// Gets the destination height for a move. This is the slot number, 
+    /// where the move will wind up. The method is slow and only be intended to be used
+    /// for rendering purposes. Returns none of the move is not possible.
+    pub fn get_move_destination(&self, column: usize) -> Option<usize> {
+        debug_check_board_coordinates!(col: column);
+        let move_spot =  get_possible_move( self.own_stones | self.opponent_stones, column);
+        for y in 0..BOARD_HEIGHT {
+            if move_spot & get_bit_representation(column, y) != 0 {
+                return Some(y);
+            }
+        }
+        None
+    }
+    
 
     /// Applies an encoded move has handed out by the function ['get_possible_move']
     pub fn apply_move(&mut self, coded_move: u64, is_computer: bool) {

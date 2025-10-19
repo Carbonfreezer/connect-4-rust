@@ -73,7 +73,7 @@ impl GameState for PlayerStartSelection {
         }
     }
 
-    fn draw(&mut self, graphics: &GraphicsPainter, _: &Blackboard) {
+    fn draw(&self, graphics: &GraphicsPainter, _: &Blackboard) {
         if self.selection_happened && (self.position_selected == 0) {
             graphics.draw_circle_normal(RADIUS, LEFT_CENTER, Color::LightYellow);
         } else {

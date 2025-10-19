@@ -3,9 +3,11 @@
 
 use crate::bit_board::BitBoard;
 use crate::bit_board_coding::{BOARD_HEIGHT, BOARD_WIDTH};
-use crate::debug_check_coordinates;
+use crate::{debug_check_board_coordinates, debug_check_draw_coordinates};
 use glume::gl;
 use glume::gl::types::*;
+
+
 
 /// Represents color types we can draw elements with.
 pub enum Color {
@@ -19,7 +21,7 @@ pub enum Color {
 fn get_color_vector(color: Color) -> [f32; 3] {
     match color {
         Color::Brown => [0.48, 0.25, 0.0],
-        Color::Yellow => [0.9, 0.8, 0.04],
+        Color::Yellow => [0.85, 0.65, 0.12],
         Color::LightYellow => [1.0, 0.91, 0.0],
         Color::Blue => [0.0, 0.28, 0.67],
         Color::LightBlue => [0.0, 0.58, 1.0],
@@ -198,6 +200,7 @@ impl GraphicsPainter {
 
     /// Draws a circle to be visible on screen.
     pub fn draw_circle_normal(&self, radius: f32, position: [f32; 2], color: Color) {
+        debug_check_draw_coordinates!(position);
         let scale = [radius, radius];
         self.draw_geometry(
             self.circle_vba,
@@ -212,6 +215,7 @@ impl GraphicsPainter {
     /// with the ['draw_rectangle_conditional_stencil'], that skips drawing the rectangle, where the
     /// mask has been drawn.
     fn draw_circle_into_stencil(&self, radius: f32, position: [f32; 2]) {
+        debug_check_draw_coordinates!(position);
         let scale = [radius, radius];
 
         // Draw into stencil only.
@@ -236,6 +240,8 @@ impl GraphicsPainter {
 
     /// Draws a rectangle with the two corners (and color) given.
     pub fn draw_rectangle_normal(&self, lower_left: [f32; 2], upper_right: [f32; 2], color: Color) {
+        debug_check_draw_coordinates!(lower_left);
+        debug_check_draw_coordinates!(upper_right);
         let translation = [
             (lower_left[0] + upper_right[0]) / 2.0,
             (lower_left[1] + upper_right[1]) / 2.0,
@@ -291,11 +297,21 @@ impl GraphicsPainter {
     const CIRCLE_RADIUS: f32 = 1.0 / BOARD_WIDTH as f32 * 0.8;
 
     /// Returns the drawing coordinates for an indicated stone position.
-    fn get_drawing_coordinates(x_stone: usize, y_stone: usize) -> [f32; 2] {
-        debug_check_coordinates!(x_stone, y_stone);
+    pub fn get_drawing_coordinates(x_stone: usize, y_stone: usize) -> [f32; 2] {
+        debug_check_board_coordinates!(x_stone, y_stone);
         [
             (x_stone as f32 / BOARD_WIDTH as f32) * 2.0 - 1.0 + 1.0 / BOARD_WIDTH as f32,
             (y_stone as f32 / BOARD_WIDTH as f32) * 2.0 - 1.0 + 1.0 / BOARD_WIDTH as f32,
+        ]
+    }
+
+
+    /// Gets a painting position above the column.
+    pub fn get_drawing_coordinates_above_column(column: usize) -> [f32; 2] {
+        debug_check_board_coordinates!(col: column);
+        [
+            (column as f32 / BOARD_WIDTH as f32) * 2.0 - 1.0 + 1.0 / BOARD_WIDTH as f32,
+            (6.0 / BOARD_WIDTH as f32) * 2.0 - 1.0 + 1.0 / BOARD_WIDTH as f32,
         ]
     }
 
@@ -304,7 +320,7 @@ impl GraphicsPainter {
         // First we draw the stencil circles.
         for x in 0..BOARD_WIDTH {
             for y in 0..BOARD_HEIGHT {
-                debug_check_coordinates!(x, y);
+                debug_check_board_coordinates!(x, y);
                 self.draw_circle_into_stencil(
                     Self::CIRCLE_RADIUS,
                     Self::get_drawing_coordinates(x, y),
@@ -319,7 +335,7 @@ impl GraphicsPainter {
         );
 
         for (x, y, first) in board.get_board_positioning() {
-            debug_check_coordinates!(x, y);
+            debug_check_board_coordinates!(x, y);
             let color = if first { Color::Yellow } else { Color::Blue };
             self.draw_circle_normal(
                 Self::CIRCLE_RADIUS,
@@ -327,5 +343,12 @@ impl GraphicsPainter {
                 color,
             );
         }
+    }
+
+    /// Draws the stone at the indicated coordinates, this is meant for drawing an animated stone.
+    pub fn draw_stone_at_coordinates(&self, position: [f32;2], is_first_player: bool)
+    {
+        debug_check_draw_coordinates!(position);
+        self.draw_circle_normal(Self::CIRCLE_RADIUS, position, if is_first_player { Color::Yellow } else { Color::Blue })
     }
 }

@@ -13,51 +13,18 @@
 //!  
 //! The number in parentheses are sentinel guards.   
 
+use crate::debug_check_board_coordinates;
+
 /// The width of the board.
 pub const BOARD_WIDTH: usize = 7;
 
 /// The height of the board.
 pub const BOARD_HEIGHT: usize = 6;
 
-/// Verifier macros for coordinates, can be used with x and y coordinates for a position, or a
-/// column only. Checks for the type to be usize and if they do not exceed the desired range,
-///
-/// # Example
-/// ```
-/// let x : usize = 2;
-/// let y : usize = 3;
-/// debug_check_coordinates!(x, y);     
-/// debug_check_coordinates!(col: x);
-/// ```    
-#[macro_export]
-macro_rules! debug_check_coordinates {
-    ($x:expr, $y:expr) => {{
-        // Forces usize at compile time.
-        let x: usize = $x;
-        let y: usize = $y;
-        debug_assert!(
-            x < BOARD_WIDTH && y < BOARD_HEIGHT,
-            "Illegal coordinates: x={}, y={} (valid: x < {}, y < {})",
-            x,
-            y,
-            BOARD_WIDTH,
-            BOARD_HEIGHT
-        );
-    }};
 
-    (col: $x:expr) => {{
-        let x: usize = $x;
-        debug_assert!(
-            x < BOARD_WIDTH,
-            "Illegal column: {} (valid: col < {})",
-            x,
-            BOARD_WIDTH
-        );
-    }};
-}
 
 /// Gets a mask, where the bit at the indicated position is set.
-const fn get_bit_representation(x: usize, y: usize) -> u64 {
+pub const fn get_bit_representation(x: usize, y: usize) -> u64 {
     1 << (x + 8 * y)
 }
 
@@ -143,7 +110,7 @@ pub fn get_position_iterator(board: u64) -> impl Iterator<Item = (usize, usize)>
 /// Gets a  representation, where the bit for the specific column is set where a move would wind up.
 /// If it is not possible to make move in that column, a 0 is returned.
 pub fn get_possible_move(board: u64, column: usize) -> u64 {
-    debug_check_coordinates!(col: column);
+    debug_check_board_coordinates!(col: column);
     // Safely upshifted board extended with a bottom row.
     ((((board << DIR_INCREMENT[1]) & FULL_BOARD_MASK) | BOTTOM_FILL_MASK) ^
         // The original board.
@@ -165,7 +132,7 @@ pub fn get_all_possible_moves(board: u64) -> impl Iterator<Item = u64> {
 pub fn get_move_information(coded_move: u64) -> Option<(usize, usize)> {
     for x in 0..BOARD_WIDTH {
         for y in 0..BOARD_HEIGHT {
-            debug_check_coordinates!(x, y);
+            debug_check_board_coordinates!(x, y);
             if coded_move & (1 << (x + 8 * y)) > 0 {
                 return Some((x, y));
             }

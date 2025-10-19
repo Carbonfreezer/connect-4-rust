@@ -52,5 +52,5 @@ pub trait GameState {
 
     /// The rendering of the screen, requests a graphic painter to do so. It may read information
     /// from the black-board.
-    fn draw(&mut self, graphics: &GraphicsPainter, board: &Blackboard);
+    fn draw(&self, graphics: &GraphicsPainter, board: &Blackboard);
 }
