@@ -3,8 +3,8 @@
 
 
 use crate::bit_board::BitBoard;
-use crate::graphics::GraphicsPainter;
 use crate::player_start_selection::PlayerStartSelection;
+use crate::render_system::graphics::GraphicsPainter;
 use crate::test_state::TestState;
 
 /// All implemented game states get an index, with which they can refer to each other.

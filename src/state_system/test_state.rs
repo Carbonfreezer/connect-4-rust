@@ -1,8 +1,8 @@
 //! This is a dummy state for testing only during implementation.
 
 use crate::game_state::{Blackboard, GameState, GameStateIndex};
-use crate::graphics::GraphicsPainter;
-use crate::stone_animator::StoneAnimator;
+use crate::render_system::graphics::GraphicsPainter;
+use crate::render_system::stone_animator::StoneAnimator;
 
 pub struct TestState {
     passed_time: f32,

@@ -1,18 +1,18 @@
 mod state_system;
 
+mod render_system;
+
 mod bit_board;
 mod bit_board_coding;
-mod graphics;
-mod stone_animator;
 mod debug_macros;
 
 use state_system::*;
 
 use crate::game_state::{Blackboard, GameStateIndex, generate_state_collection};
-use crate::graphics::GraphicsPainter;
 use glume::gl;
 use glume::window::{Event, MouseButton};
 use std::time::Duration;
+use crate::render_system::graphics::GraphicsPainter;
 
 #[tokio::main]
 async fn main() {

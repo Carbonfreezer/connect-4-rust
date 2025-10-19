@@ -2,7 +2,7 @@
 //! the game.
 
 use crate::game_state::{Blackboard, GameState, GameStateIndex};
-use crate::graphics::{Color, GraphicsPainter};
+use crate::render_system::graphics::{Color, GraphicsPainter};
 
 pub struct PlayerStartSelection {
     position_selected: u8,

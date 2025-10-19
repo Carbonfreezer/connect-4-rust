@@ -3,7 +3,7 @@
 use crate::bit_board::BitBoard;
 use crate::bit_board_coding::BOARD_WIDTH;
 use crate::{debug_check_board_coordinates, debug_check_draw_coordinates};
-use crate::graphics::GraphicsPainter;
+use crate::render_system::graphics::GraphicsPainter;
 
 /// An animator that takes care on animating a stone into the drawing arena.
 /// It can render itself and update itself and indicates if it is finished or not.
@@ -31,7 +31,7 @@ impl StoneAnimator {
     /// Starts animating a stone. Needs the board to find out where to go to in height, the column where to animate,
     /// and an indication if this is the first player to determine the color.
     pub fn start_animating(&mut self, board: &BitBoard, column : usize, is_computer: bool) {
-        assert_eq!(self.is_animating, false, "Cannot start animating while animating.");
+        debug_assert_eq!(self.is_animating, false, "Cannot start animating while animating.");
         debug_check_board_coordinates!(col: column);
         self.first_player = is_computer == board.get_computer_first();
         let  height_chosen = board.get_move_destination(column).expect("The column handed over does not present a legal move.");
