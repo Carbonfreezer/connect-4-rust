@@ -53,7 +53,7 @@ impl StoneAnimator {
         debug_assert!(self.is_animating, "Only update during animation.");
         let delta_way = - delta_time * FALLING_VELOCITY;
         self.remaining_way_length += delta_way; 
-        self.is_animating = self.remaining_way_length > 0.0;
+        self.is_animating = self.remaining_way_length >= - delta_way;
         self.current_position[1] += delta_way;
     }
     
