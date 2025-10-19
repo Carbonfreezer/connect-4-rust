@@ -164,12 +164,9 @@ impl GraphicsPainter {
         let mut vertices: Vec<f32> = Vec::with_capacity(POINTS_IN_CIRCLE * 2);
 
         for i in 0..POINTS_IN_CIRCLE {
-            vertices.push(
-                 (i as f32 * 2.0 * std::f32::consts::PI / POINTS_IN_CIRCLE as f32).cos(),
-            );
-            vertices.push(
-                 (i as f32 * 2.0 * std::f32::consts::PI / POINTS_IN_CIRCLE as f32).sin(),
-            );
+            let angle = i as f32 * 2.0 * std::f32::consts::PI / POINTS_IN_CIRCLE as f32;
+            vertices.push (angle.cos());
+            vertices.push(angle.sin());
         }
 
         (Self::create_vba(&vertices), POINTS_IN_CIRCLE as i32)
@@ -183,16 +180,13 @@ impl GraphicsPainter {
 
     fn draw_geometry(&self, vba: GLuint, num_vertices : GLint,  scale : [f32; 2], translation : [f32; 2], color : Color) {
         let color_vec = get_color_vector(color);
-        let color_ptr = color_vec.as_ptr();
-        let translation_ptr = translation.as_ptr();
-        let scale_ptr = scale.as_ptr();
 
         unsafe {
             gl::UseProgram(self.shader_program);
             gl::BindVertexArray(vba);
-            gl::Uniform3fv(self.color, 1, color_ptr);
-            gl::Uniform2fv(self.translation, 1, translation_ptr);
-            gl::Uniform2fv(self.scale, 1, scale_ptr);
+            gl::Uniform3fv(self.color, 1, color_vec.as_ptr());
+            gl::Uniform2fv(self.translation, 1, translation.as_ptr());
+            gl::Uniform2fv(self.scale, 1, scale.as_ptr());
             gl::DrawArrays(gl::TRIANGLE_FAN, 0, num_vertices);
         }
     }
@@ -254,7 +248,7 @@ impl GraphicsPainter {
 
     /// The radius with which we want to draw the stones in the below function.
     const CIRCLE_RADIUS : f32 = 1.0 / 7.0 * 0.8;
-    
+
     /// Returns the drawing coordinates for an indicated stone position.
     fn get_drawing_coordinates(x_stone : usize, y_stone : usize) -> [f32;2] {
         debug_check_coordinates!(x_stone,y_stone);
