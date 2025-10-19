@@ -10,7 +10,7 @@
 /// ```
 #[macro_export]
 macro_rules! debug_check_draw_coordinates {
-    ($coord:expr) => {{
+    ($coord:expr) => {
         // Forces f32 slice at compile time.
         let [x, y]: [f32; 2] = $coord;
         debug_assert!(
@@ -19,7 +19,7 @@ macro_rules! debug_check_draw_coordinates {
             x,
             y,
         );
-    }};
+    };
 }
 
 /// Verifier macros for coordinates, can be used with x and y coordinates for a position, or a
@@ -34,7 +34,7 @@ macro_rules! debug_check_draw_coordinates {
 /// ```    
 #[macro_export]
 macro_rules! debug_check_board_coordinates {
-    ($x:expr, $y:expr) => {{
+    ($x:expr, $y:expr) => {
         // Forces usize at compile time.
         let x: usize = $x;
         let y: usize = $y;
@@ -46,9 +46,9 @@ macro_rules! debug_check_board_coordinates {
             BOARD_WIDTH,
             BOARD_HEIGHT
         );
-    }};
+    };
 
-    (col: $x:expr) => {{
+    (col: $x:expr) => {
         let x: usize = $x;
         debug_assert!(
             x < BOARD_WIDTH,
@@ -56,5 +56,5 @@ macro_rules! debug_check_board_coordinates {
             x,
             BOARD_WIDTH
         );
-    }};
+    };
 }

@@ -10,7 +10,7 @@ use std::hash::Hash;
 use std::iter::Iterator;
 use std::mem;
 
-/// Encodes the game result needed for the interface to the interface system.
+/// Encodes the game result needed for the drawing and state system.
 #[derive(Clone, Copy, PartialEq, Eq, Debug)]
 pub enum GameResult {
     Pending,
@@ -19,6 +19,7 @@ pub enum GameResult {
     SecondPlayerWon,
 }
 
+/// The bitboard has two representations for own and opponent stones.
 #[derive(Clone)]
 pub struct BitBoard {
     own_stones: u64,
