@@ -42,8 +42,8 @@ impl GameState for PlayerStartSelection {
         self.time_passed_after_selection = 0.0;
     }
 
-    /// The update waits for the input signal, updates the information on the game board and 
-    /// waits a short time for the highlighted button. 
+    /// The update waits for the input signal, updates the information on the game board and
+    /// waits a short time for the highlighted button.
     fn update(&mut self, delta_time: f32, black_board: &mut Blackboard) -> Option<GameStateIndex> {
         if self.selection_happened {
             self.time_passed_after_selection += delta_time;
@@ -60,7 +60,7 @@ impl GameState for PlayerStartSelection {
     }
 
     /// Mouse click detects the potential onto one of the buttons and eventually sets
-    /// the information in the state. 
+    /// the information in the state.
     fn mouse_click(&mut self, position: [f32; 2]) {
         if self.selection_happened {
             return;

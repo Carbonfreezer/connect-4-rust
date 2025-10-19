@@ -29,7 +29,6 @@ pub struct BitBoard {
 }
 
 impl BitBoard {
-    
     /// Resets the board at the end of the game.
     pub fn reset(&mut self) {
         self.own_stones = 0;
@@ -129,13 +128,12 @@ impl BitBoard {
         }
         None
     }
-    
+
     /// Simplifies making a move on a column on the outside. It has to be guarantied that move is possible.
     pub fn apply_move_on_column(&mut self, column: usize, is_computer: bool) {
         let coded_move = self.get_possible_move(column);
         debug_assert!(coded_move != 0, "The indicated move is not possible.");
         self.apply_move(coded_move, is_computer);
-        
     }
 
     /// Applies an encoded move has handed out by the function *get_possible_move*.

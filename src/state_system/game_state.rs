@@ -1,11 +1,11 @@
 //! This module contains the trait of all states and contains a blackboard,
 //! over which states can exchange information.
 
-use crate::game_over_state::GameOverState;
 use crate::board_logic::bit_board::BitBoard;
+use crate::computer_move_execution_state::ComputerMoveExecutionState;
+use crate::game_over_state::GameOverState;
 use crate::player_start_selection::PlayerStartSelection;
 use crate::render_system::graphics::GraphicsPainter;
-use crate::computer_move_execution_state::ComputerMoveExecutionState;
 use crate::state_system::player_input_state::PlayerInputState;
 use crate::test_state::TestState;
 
@@ -27,7 +27,7 @@ pub fn generate_state_collection() -> Vec<Box<dyn GameState>> {
         Box::new(ComputerMoveExecutionState::new()),
         Box::new(PlayerInputState::new()),
         // TODO: One missing here.
-        Box::new(GameOverState::new())
+        Box::new(GameOverState::new()),
     ];
     result
 }
@@ -37,17 +37,17 @@ pub struct Blackboard {
     /// The general board, that show the current game.
     pub game_board: BitBoard,
     /// When the information of a computer choice has to be carried over, it is done here.
-    pub computer_choice : usize,
+    pub computer_choice: usize,
     /// Here comes the choice of the player.
-    pub player_choice : usize,
+    pub player_choice: usize,
 }
 
 impl Blackboard {
     pub fn new() -> Blackboard {
         Blackboard {
             game_board: BitBoard::new(),
-            computer_choice : 0,
-            player_choice : 0,
+            computer_choice: 0,
+            player_choice: 0,
         }
     }
 }

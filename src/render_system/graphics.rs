@@ -14,7 +14,7 @@ pub enum Color {
     LightYellow,
     Blue,
     LightBlue,
-    Grey
+    Grey,
 }
 
 /// Generates an RGB value for any of the Colors indicated.

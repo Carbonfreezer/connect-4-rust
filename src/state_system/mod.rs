@@ -7,7 +7,7 @@
 //! 1. The player select state, where the player can choose when to start.
 //! 2. The computer execution state, where a determined move gets executed.
 //! 3. The player input state. Input is processed here and also the animation is shown, when this would end ending the game.
-//! 4. The player stone animation and computer move calculation state. This is where the AI computation happens. 
+//! 4. The player stone animation and computer move calculation state. This is where the AI computation happens.
 //! The calculation gets spawned in a Tokio tak as soon as the animation starts.
 //! 5. The game end state, that shows the game situation and asks for a confirmation button to start over.
 //!
@@ -19,9 +19,9 @@
 //! * 3->5: When the player input would result in ending the game, the animation is still played and then the transfer happens.
 //! * 5->1: When the player has acknowledged the result, we go to selection again.
 
+pub mod computer_move_execution_state;
+pub mod game_over_state;
 pub mod game_state;
+pub mod player_input_state;
 pub mod player_start_selection;
 pub mod test_state;
-pub mod computer_move_execution_state;
-pub mod player_input_state;
-pub mod game_over_state;
