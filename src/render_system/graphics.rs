@@ -14,6 +14,7 @@ pub enum Color {
     LightYellow,
     Blue,
     LightBlue,
+    Grey
 }
 
 /// Generates an RGB value for any of the Colors indicated.
@@ -24,6 +25,7 @@ fn get_color_vector(color: Color) -> [f32; 3] {
         Color::LightYellow => [1.0, 0.91, 0.0],
         Color::Blue => [0.0, 0.28, 0.67],
         Color::LightBlue => [0.0, 0.58, 1.0],
+        Color::Grey => [0.01, 0.19, 0.12],
     }
 }
 
@@ -293,7 +295,7 @@ impl GraphicsPainter {
     }
 
     /// The radius with which we want to draw the stones in the below function.
-    const CIRCLE_RADIUS: f32 = 1.0 / BOARD_WIDTH as f32 * 0.8;
+    pub const CIRCLE_RADIUS: f32 = 1.0 / BOARD_WIDTH as f32 * 0.8;
 
     /// Returns the drawing coordinates for an indicated stone position.
     pub fn get_drawing_coordinates(x_stone: usize, y_stone: usize) -> [f32; 2] {

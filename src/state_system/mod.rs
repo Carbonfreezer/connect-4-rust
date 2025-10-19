@@ -22,3 +22,6 @@
 pub mod game_state;
 pub mod player_start_selection;
 pub mod test_state;
+pub mod computer_move_execution_state;
+pub mod player_input_state;
+pub mod game_over_state;

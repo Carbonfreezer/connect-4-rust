@@ -28,6 +28,15 @@ pub struct BitBoard {
     computer_first: bool,
 }
 
+impl BitBoard {
+    
+    /// Resets the board at the end of the game.
+    pub fn reset(&mut self) {
+        self.own_stones = 0;
+        self.opponent_stones = 0;
+    }
+}
+
 /// This is the symmetry independent coding that can be used for the transposition table.
 #[derive(Hash, PartialEq, Eq, Clone)]
 pub struct SymmetryIndependentPosition {
@@ -120,6 +129,14 @@ impl BitBoard {
         }
         None
     }
+    
+    /// Simplifies making a move on a column on the outside. It has to be guarantied that move is possible.
+    pub fn apply_move_on_column(&mut self, column: usize, is_computer: bool) {
+        let coded_move = self.get_possible_move(column);
+        debug_assert!(coded_move != 0, "The indicated move is not possible.");
+        self.apply_move(coded_move, is_computer);
+        
+    }
 
     /// Applies an encoded move has handed out by the function *get_possible_move*.
     /// This function is meant to be used for UI interaction and not the AI.
@@ -164,6 +181,13 @@ impl BitBoard {
     pub fn check_for_draw_if_not_winning(&self) -> bool {
         let compound = self.opponent_stones | self.own_stones;
         compound == FULL_BOARD_MASK
+    }
+
+    /// Easy game over method to be used for the game state system to determine the follow-up states.
+    pub fn is_game_over(&self) -> bool {
+        self.check_for_draw_if_not_winning()
+            || check_for_winning(self.opponent_stones)
+            || check_for_winning(self.own_stones)
     }
 
     /// Analyzes the winning condition for the game board to be used in combination with the user interface
