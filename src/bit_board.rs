@@ -1,7 +1,9 @@
+use crate::bit_board_coding::BOARD_WIDTH;
 use std::hash::{Hash};
 use std::iter::Iterator;
 use std::mem;
 use crate::bit_board_coding::{flip_board, get_position_iterator, get_possible_move};
+use crate::debug_check_coordinates;
 
 #[derive(Clone)]
 pub struct BitBoard {
@@ -70,6 +72,7 @@ impl BitBoard {
     /// the correctly set bit.
     pub fn get_possible_move(&self, column: usize) -> u64
     {
+        debug_check_coordinates!(col: column);
         get_possible_move (self.own_stones | self.opponent_stones, column)
     }
 

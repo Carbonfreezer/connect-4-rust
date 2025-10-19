@@ -1,14 +1,17 @@
+//! This module contains bit board coding helper functions and a lot of
+//! constants. Those are calculated at compile time. As for loops are not allowed
+//! in const functions they have been reformulated to while loops.
 
-/// Uses a bit board along the following structure:
-/// (48) (49) (50) (51) (52) (53) (54) (55)
-///  40   41   42   43   44   45   46  (47)
-///  32   33   34   35   36   37   38  (39)
-///  24   25   26   27   28   29   30  (31)
-///  16   17   18   19   20   21   22  (23)
-///   8   9    10   11   12   13   14  (15)
-///   0   1     2    3    4    5    6  ( 7)
-///
-/// The number in parantheses are sentinal guards.
+//! Uses a bit board along the following structure:  
+//! (48) (49) (50) (51) (52) (53) (54) (55)  
+//!  40   41   42   43   44   45   46  (47)  
+//!  32   33   34   35   36   37   38  (39)  
+//!  24   25   26   27   28   29   30  (31)  
+//!  16   17   18   19   20   21   22  (23)  
+//!   8   9    10   11   12   13   14  (15)  
+//!   0   1     2    3    4    5    6  ( 7)  
+//!  
+//! The number in parantheses are sentinal guards.   
 
 
 /// The width of the board.
@@ -18,16 +21,49 @@ pub const BOARD_WIDTH: usize = 7;
 pub const BOARD_HEIGHT : usize = 6;
 
 
+/// Verifier macros for coordinates, can be used with x and y coordinates for a position, or a 
+/// column only. Checks for the type to be usize and if they do not exceed the desired range,
+/// # Example
+/// ```
+/// let x : usize = 2;
+/// let y : usize = 3;
+/// debug_check_coordinates!(x, y);     
+/// debug_check_coordinates!(col: x);
+/// ```    
+#[macro_export]
+macro_rules! debug_check_coordinates {
+    ($x:expr, $y:expr) => {{
+        // Forces usize at compile time.
+        let x: usize = $x;
+        let y: usize = $y;
+        debug_assert!(
+            x < BOARD_WIDTH && y < BOARD_HEIGHT,
+            "Illegal coordinates: x={}, y={} (valid: x < {}, y < {})",
+            x, y, BOARD_WIDTH, BOARD_HEIGHT
+        );
+    }};
 
-/// Here wee define a couple of masks that are helpful.
+    (col: $x:expr) => {{
+        let x: usize = $x;
+        debug_assert!(
+            x < BOARD_WIDTH,
+            "Illegal column: {} (valid: col < {})",
+            x, BOARD_WIDTH
+        );
+   }}
+}
+
+
+/// Gets a mask, where the bit at the indicated position is set.
 const fn get_bit_representation(x: usize, y: usize) -> u64 {
     1 << (x + 8 * y)
 }
 
+/// Generates a mask for one specific column.
 const fn get_column_mask(col: usize) -> u64 {
     let mut result: u64 = 0;
     let mut y = 0;
-    while y < BOARD_HEIGHT {  
+    while y < BOARD_HEIGHT {
         result |= get_bit_representation(col, y);
         y += 1;
     }
@@ -49,6 +85,7 @@ const fn get_full_board_mask() -> u64 {
     result
 }
 
+/// Generates a mask for the lowest line.
 const fn get_bottom_filler_mask() -> u64 {
     let mut result: u64 = 0;
     let mut x = 0;
@@ -76,10 +113,10 @@ pub const FULL_BOARD_MASK: u64 = get_full_board_mask();
 pub const BOTTOM_FILL_MASK: u64 = get_bottom_filler_mask();
 
 
-/// Bit shift increment:
-/// 0  1   2
-/// \  |  /
-///    X -  3
+/// Bit shift increment:  
+/// 0  1   2  
+/// \  |  /  
+///    X -  3  
 pub const DIR_INCREMENT: [u8; 4] = [7, 8, 9, 1];
 
 
@@ -107,6 +144,7 @@ pub fn get_position_iterator(board: u64) -> impl Iterator<Item = (usize, usize)>
 /// Gets a  representation, where the bit for the specific column is set where a move would wind up.
 /// If it is not possible to make move in that column, a 0 is returned.
 pub fn get_possible_move(board : u64, column : usize) -> u64 {
+    debug_check_coordinates!(col: column); 
     // Safely upshifted board extended with a bottom row.
     ((((board << DIR_INCREMENT[1]) & FULL_BOARD_MASK) | BOTTOM_FILL_MASK) ^
         // The original board.

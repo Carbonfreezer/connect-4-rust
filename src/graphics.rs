@@ -2,6 +2,7 @@ use glume::gl;
 use glume::gl::types::*;
 use crate::bit_board::BitBoard;
 use crate::bit_board_coding::{BOARD_HEIGHT, BOARD_WIDTH};
+use crate::debug_check_coordinates;
 
 /// Represents color types we can draw elements with.
 pub enum Color
@@ -256,6 +257,7 @@ impl GraphicsPainter {
     
     /// Returns the drawing coordinates for an indicated stone position.
     fn get_drawing_coordinates(x_stone : usize, y_stone : usize) -> [f32;2] {
+        debug_check_coordinates!(x_stone,y_stone);
         [(x_stone as f32 / 7.0) * 2.0 - 1.0 + 1.0 / 7.0,
          (y_stone as f32 / 7.0) * 2.0 - 1.0 + 1.0 / 7.0]
     }
@@ -266,6 +268,7 @@ impl GraphicsPainter {
         // First we draw the stencil circles.
         for x in 0..BOARD_WIDTH {
             for y in 0..BOARD_HEIGHT {
+                debug_check_coordinates!(x,y);
                 self.draw_circle_into_stencil(Self::CIRCLE_RADIUS, Self::get_drawing_coordinates(x,y));
             }
         }
@@ -273,6 +276,7 @@ impl GraphicsPainter {
         self.draw_rectangle_conditional_stencil([-1.0, -1.0], [1.0, 1.0 - 2.0 / 7.0], Color::Brown);
 
         for (x,y,first) in board.get_board_positioning() {
+            debug_check_coordinates!(x,y);
             let color = if first {Color::Yellow} else {Color::Blue};
             self.draw_circle_normal(Self::CIRCLE_RADIUS, Self::get_drawing_coordinates(x,y),  color);
         }

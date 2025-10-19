@@ -13,9 +13,14 @@ impl PlayerStartSelection {
     }
 }
 
+/// The position where the left element should be drawn-
 const LEFT_CENTER : [f32;2 ]= [-0.5, 0.0];
+/// The position where the right element should be drawn.
 const RIGHT_CENTER : [f32;2 ]= [0.5, 0.0];
+/// The radius of the button.
 const RADIUS : f32 = 0.3;
+/// The highlight time for the button.
+const HIGHLIGHT_TIME : f32 = 0.3;
 
 fn get_distance_between(first_point: [f32;2 ], second_point: [f32;2]) -> f32 {
     let x = second_point[0] - first_point[0];
@@ -35,7 +40,7 @@ impl GameState for PlayerStartSelection {
             self.time_passed_after_selection += delta_time;
         }
         
-        if self.time_passed_after_selection >= 0.3 {
+        if self.time_passed_after_selection >= HIGHLIGHT_TIME {
             board.game_board.set_computer_first( self.position_selected == 1);
             return Some(GameStateIndex::Start);
         }
