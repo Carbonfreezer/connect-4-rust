@@ -14,8 +14,6 @@ use crate::render_system::graphics::GraphicsPainter;
 
 #[tokio::main]
 async fn main() {
-    // bit_board_coding::print_static_values();
-
     let window_config = glume::window::WindowConfiguration {
         title: "4 Connect".to_string(),
         size: (800, 800),

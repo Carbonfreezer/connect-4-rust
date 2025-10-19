@@ -38,14 +38,14 @@ impl GameState for TestState {
         self.is_computer = false;
     }
 
-    fn update(&mut self, delta_time: f32, board: &mut Blackboard) -> Option<GameStateIndex> {
+    fn update(&mut self, delta_time: f32, black_board: &mut Blackboard) -> Option<GameStateIndex> {
         if self.animator.is_animating() {
             self.animator.update(delta_time);
             return None;
         }
         
         if self.end_value == GameResult::Pending {
-            let (result, list)  = board.game_board.get_winning_status_for_rendering();
+            let (result, list)  = black_board.game_board.get_winning_status_for_rendering();
             self.end_value = result;
             self.winning_stones = list.unwrap_or(Vec::new());
         }
@@ -55,16 +55,16 @@ impl GameState for TestState {
 
         if self.awaiting_placement {
             self.awaiting_placement = false;
-            board.game_board.apply_move(self.move_destination, self.is_computer);
+            black_board.game_board.apply_move(self.move_destination, self.is_computer);
             self.is_computer = !self.is_computer;
         }
 
         if let Some(pos) = self.slot_picked {
             self.slot_picked = None;
 
-            let mov = board.game_board.get_possible_move(pos);
+            let mov = black_board.game_board.get_possible_move(pos);
             if mov != 0 {
-                self.animator.start_animating(&board.game_board, pos, self.is_computer);
+                self.animator.start_animating(&black_board.game_board, pos, self.is_computer);
                 self.awaiting_placement = true;
                 self.move_destination = mov;
             }

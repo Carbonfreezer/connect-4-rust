@@ -42,13 +42,13 @@ impl GameState for PlayerStartSelection {
         self.time_passed_after_selection = 0.0;
     }
 
-    fn update(&mut self, delta_time: f32, board: &mut Blackboard) -> Option<GameStateIndex> {
+    fn update(&mut self, delta_time: f32, black_board: &mut Blackboard) -> Option<GameStateIndex> {
         if self.selection_happened {
             self.time_passed_after_selection += delta_time;
         }
 
         if self.time_passed_after_selection >= HIGHLIGHT_TIME {
-            board
+            black_board
                 .game_board
                 .set_computer_first(self.position_selected == 1);
             return Some(GameStateIndex::Start);
