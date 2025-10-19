@@ -11,7 +11,7 @@
 //!   8   9    10   11   12   13   14  (15)  
 //!   0   1     2    3    4    5    6  ( 7)  
 //!  
-//! The number in parentheses are sentinel guards.   
+//! The number in parentheses are sentinel guards.
 
 use crate::debug_check_board_coordinates;
 
@@ -24,6 +24,7 @@ pub const BOARD_HEIGHT: usize = 6;
 
 
 /// Gets a mask, where the bit at the indicated position is set.
+#[inline(always)]
 pub const fn get_bit_representation(x: usize, y: usize) -> u64 {
     1 << (x + 8 * y)
 }
@@ -107,36 +108,74 @@ pub fn get_position_iterator(board: u64) -> impl Iterator<Item = (usize, usize)>
         .filter(move |&(x, y)| board & (1 << (x + 8 * y)) != 0)
 }
 
+
+/// Applies the indicated shift for movement by the shift value and clips
+/// the value against the sentinel.
+#[inline(always)]
+fn clip_shift(input: u64, amount: u8) -> u64
+{
+    (input << amount) & FULL_BOARD_MASK
+}
 /// Gets a  representation, where the bit for the specific column is set where a move would wind up.
 /// If it is not possible to make move in that column, a 0 is returned.
 pub fn get_possible_move(board: u64, column: usize) -> u64 {
     debug_check_board_coordinates!(col: column);
     // Safely upshifted board extended with a bottom row.
-    ((((board << DIR_INCREMENT[1]) & FULL_BOARD_MASK) | BOTTOM_FILL_MASK) ^
+    ((clip_shift(board, DIR_INCREMENT[1]) | BOTTOM_FILL_MASK) ^
         // The original board.
         board )
         // Filter out the desired column.
         & COLUMN_MASK[column]
 }
 
+
+/// Checks if the game board contains a winning constellation.
+/// Here the bit board representation really shines. Returns true
+/// if the board has one sequence of rows.
+pub fn check_for_winning(board: u64)->bool {
+    for bit_shift in DIR_INCREMENT {
+        let d = clip_shift(board, bit_shift) & board;
+        let dd = clip_shift(
+            clip_shift(d, bit_shift)
+            , bit_shift );
+        if (dd & d) != 0 {
+            return true;
+        }
+    }
+
+    false
+}
+
+/// Generates a board representation, where bits are set that belong to a winning combination.
+/// If there is none, a None is returned.
+pub fn get_winning_board(board: u64) -> Option<u64> {
+    for bit_shift in DIR_INCREMENT {
+        let d = clip_shift(board, bit_shift) & board;
+        let dd = clip_shift(
+            clip_shift(d, bit_shift)
+            , bit_shift );
+        let mut flag = dd & d;
+        if flag == 0 {continue;}
+        // Now the last bit of every winning constellation is set.
+        let mut result = flag;
+        // We can safely shift back, because we came from there.
+        for _ in 0..3 {
+            flag = flag >> bit_shift;
+            result |= flag;
+        }
+       
+        return Some(result)
+    }
+    
+    None
+}
+
 /// Gets an iterator for all possible moves for the ai.
 pub fn get_all_possible_moves(board: u64) -> impl Iterator<Item = u64> {
-    let comb = (((board << DIR_INCREMENT[1]) & FULL_BOARD_MASK) | BOTTOM_FILL_MASK) ^ board;
+    let comb = (clip_shift(board, DIR_INCREMENT[1])  | BOTTOM_FILL_MASK) ^ board;
     (0..BOARD_WIDTH)
         .into_iter()
         .map(move |x| comb & COLUMN_MASK[x])
         .filter(|&x| x != 0)
 }
 
-/// Use only for interface stuff. Returns for an indicated move, the x,y coordinate where it will wind up.
-pub fn get_move_information(coded_move: u64) -> Option<(usize, usize)> {
-    for x in 0..BOARD_WIDTH {
-        for y in 0..BOARD_HEIGHT {
-            debug_check_board_coordinates!(x, y);
-            if coded_move & (1 << (x + 8 * y)) > 0 {
-                return Some((x, y));
-            }
-        }
-    }
-    None
-}

@@ -1,4 +1,4 @@
-
+//! Here we collect a couple of custom debug macros.
 
 /// Macro to check if the coordinates are in the -1..1 range.
 /// And checks, that it is a 2d float vector.

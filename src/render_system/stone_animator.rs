@@ -29,7 +29,7 @@ impl StoneAnimator {
 
 
     /// Starts animating a stone. Needs the board to find out where to go to in height, the column where to animate,
-    /// and an indication if this is the first player to determine the color.
+    /// and an indication if this is the computer player to determine the color.
     pub fn start_animating(&mut self, board: &BitBoard, column : usize, is_computer: bool) {
         debug_assert_eq!(self.is_animating, false, "Cannot start animating while animating.");
         debug_check_board_coordinates!(col: column);
@@ -48,7 +48,7 @@ impl StoneAnimator {
         graphics.draw_stone_at_coordinates(self.current_position, self.first_player);
     }
     
-    /// Updates the animation.
+    /// Updates the animation and moves the stone downwards.
     pub fn update(&mut self, delta_time : f32)  {
         debug_assert!(self.is_animating, "Only update during animation.");
         let delta_way = - delta_time * FALLING_VELOCITY;

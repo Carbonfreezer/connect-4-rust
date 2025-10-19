@@ -1,5 +1,6 @@
 //! This is a dummy state for testing only during implementation.
 
+use crate::bit_board::GameResult;
 use crate::game_state::{Blackboard, GameState, GameStateIndex};
 use crate::render_system::graphics::GraphicsPainter;
 use crate::render_system::stone_animator::StoneAnimator;
@@ -10,7 +11,9 @@ pub struct TestState {
     animator : StoneAnimator,
     move_destination : u64,
     awaiting_placement: bool,
-    is_computer : bool
+    is_computer : bool,
+    end_value : GameResult,
+    winning_stones : Vec<(usize, usize)>,
 }
 
 impl TestState {
@@ -21,7 +24,9 @@ impl TestState {
             animator : StoneAnimator::new(),
             move_destination: 0,
             awaiting_placement: false,
-            is_computer : false
+            is_computer : false,
+            end_value : GameResult::Pending,
+            winning_stones : Vec::new(),
         }
     }
 }
@@ -36,6 +41,15 @@ impl GameState for TestState {
     fn update(&mut self, delta_time: f32, board: &mut Blackboard) -> Option<GameStateIndex> {
         if self.animator.is_animating() {
             self.animator.update(delta_time);
+            return None;
+        }
+        
+        if self.end_value == GameResult::Pending {
+            let (result, list)  = board.game_board.get_winning_status_for_rendering();
+            self.end_value = result;
+            self.winning_stones = list.unwrap_or(Vec::new());
+        }
+        else {
             return None;
         }
 
@@ -71,5 +85,12 @@ impl GameState for TestState {
             self.animator.draw(graphics);
         }
         graphics.render_board(&board.game_board);
+        
+        if (self.end_value == GameResult::FirstPlayerWon) {
+            graphics.render_winning_stones(true, &self.winning_stones);
+        } else if (self.end_value == GameResult::SecondPlayerWon) {
+            graphics.render_winning_stones(false, &self.winning_stones);
+        }
+            
     }
 }

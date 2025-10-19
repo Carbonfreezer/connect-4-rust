@@ -1,9 +1,24 @@
-use crate::bit_board_coding::{get_bit_representation, BOARD_HEIGHT, BOARD_WIDTH};
+//! This module contains the game board represented as a bit board.
+
+use crate::bit_board_coding::{
+    BOARD_HEIGHT, BOARD_WIDTH, FULL_BOARD_MASK, check_for_winning, get_bit_representation,
+    get_winning_board,
+};
 use crate::bit_board_coding::{flip_board, get_position_iterator, get_possible_move};
 use crate::debug_check_board_coordinates;
 use std::hash::Hash;
 use std::iter::Iterator;
 use std::mem;
+use std::path::Iter;
+
+/// Encodes the game result needed for the interface to the interface system.
+#[derive(Clone, Copy, PartialEq, Eq, Debug)]
+pub enum GameResult {
+    Pending,
+    Draw,
+    FirstPlayerWon,
+    SecondPlayerWon,
+}
 
 #[derive(Clone)]
 pub struct BitBoard {
@@ -14,7 +29,7 @@ pub struct BitBoard {
 }
 
 /// This is the symmetry independent coding that can be used for the transposition table.
-#[derive(Hash, PartialEq, Eq)]
+#[derive(Hash, PartialEq, Eq, Clone)]
 pub struct SymmetryIndependentPosition {
     own: u64,
     opp: u64,
@@ -55,17 +70,19 @@ impl BitBoard {
     pub fn set_computer_first(&mut self, is_first: bool) {
         self.computer_first = is_first;
     }
-    
+
     /// Checks if the computer makes the first move.
     pub fn get_computer_first(&self) -> bool {
         self.computer_first
     }
-    
+
+    /// Swaps the players needed for the NEGAMAX algorithm.
     pub fn swap_players(&mut self) {
         mem::swap(&mut self.own_stones, &mut self.opponent_stones);
     }
 
     /// Returns a list of stones of positions and indications, if they are first player stones.
+    /// This method is slow and to be used for rendering the board.
     pub fn get_board_positioning(&self) -> impl Iterator<Item = (usize, usize, bool)> {
         let first_stones;
         let second_stones;
@@ -89,13 +106,13 @@ impl BitBoard {
         debug_check_board_coordinates!(col: column);
         get_possible_move(self.own_stones | self.opponent_stones, column)
     }
-    
-    /// Gets the destination height for a move. This is the slot number, 
+
+    /// Gets the destination height for a move. This is the slot number,
     /// where the move will wind up. The method is slow and only be intended to be used
     /// for rendering purposes. Returns none of the move is not possible.
     pub fn get_move_destination(&self, column: usize) -> Option<usize> {
         debug_check_board_coordinates!(col: column);
-        let move_spot =  get_possible_move( self.own_stones | self.opponent_stones, column);
+        let move_spot = get_possible_move(self.own_stones | self.opponent_stones, column);
         for y in 0..BOARD_HEIGHT {
             if move_spot & get_bit_representation(column, y) != 0 {
                 return Some(y);
@@ -103,9 +120,8 @@ impl BitBoard {
         }
         None
     }
-    
 
-    /// Applies an encoded move has handed out by the function ['get_possible_move']
+    /// Applies an encoded move has handed out by the function *get_possible_move*
     pub fn apply_move(&mut self, coded_move: u64, is_computer: bool) {
         if is_computer {
             self.own_stones |= coded_move;
@@ -122,5 +138,51 @@ impl BitBoard {
     /// Revokes the move as used in the ai.
     fn revoke_move_active(&mut self, coded_move: u64) {
         self.own_stones ^= coded_move;
+    }
+
+    /// Checks if we have a winning constellation for the opponent stone.
+    /// This method is intended to be used for the AI, because after going into the recursion
+    /// after means that the other player has possibly finished the game.
+    pub fn check_winning_opponent(&self) -> bool {
+        check_for_winning(self.opponent_stones)
+    }
+
+    /// Checks if we have a draw situation under the assumption that we do not have a winning
+    /// one.
+    pub fn check_for_draw_if_not_winning(&self) -> bool {
+        let compound = (self.opponent_stones | self.own_stones);
+        compound == FULL_BOARD_MASK
+    }
+
+    /// Analyzes the winning condition for the game board to be used in combination with the user interface
+    /// system. It returns the situation and if one party has won, it returns the stone coordinates of the
+    /// stones generating four stones. This can eventually be more than one into one direction.
+    pub fn get_winning_status_for_rendering(&self) -> (GameResult, Option<Vec<(usize, usize)>>) {
+        let first_board;
+        let second_board;
+
+        if self.computer_first {
+            first_board = self.own_stones;
+            second_board = self.opponent_stones;
+        } else {
+            first_board = self.opponent_stones;
+            second_board = self.own_stones;
+        }
+
+        if check_for_winning(first_board) {
+            (
+                GameResult::FirstPlayerWon,
+                Some(get_position_iterator(get_winning_board(first_board).unwrap()).collect()),
+            )
+        } else if check_for_winning(second_board) {
+            (
+                GameResult::SecondPlayerWon,
+                Some(get_position_iterator(get_winning_board(second_board).unwrap()).collect()),
+            )
+        } else if self.check_for_draw_if_not_winning() {
+            (GameResult::Draw, None)
+        } else {
+            (GameResult::Pending, None)
+        }
     }
 }

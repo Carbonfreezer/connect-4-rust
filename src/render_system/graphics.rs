@@ -10,6 +10,7 @@ use glume::gl::types::*;
 
 
 /// Represents color types we can draw elements with.
+#[derive(Clone, Copy, PartialEq, Eq, Debug)]
 pub enum Color {
     Brown,
     Yellow,
@@ -18,6 +19,7 @@ pub enum Color {
     LightBlue,
 }
 
+/// Generates an RGB value for any of the Colors indicated.
 fn get_color_vector(color: Color) -> [f32; 3] {
     match color {
         Color::Brown => [0.48, 0.25, 0.0],
@@ -212,7 +214,7 @@ impl GraphicsPainter {
     }
 
     /// Draws the circle only into the stencil buffer. This is meant to be used in conjunction
-    /// with the ['draw_rectangle_conditional_stencil'], that skips drawing the rectangle, where the
+    /// with the *draw_rectangle_conditional_stencil*, that skips drawing the rectangle, where the
     /// mask has been drawn.
     fn draw_circle_into_stencil(&self, radius: f32, position: [f32; 2]) {
         debug_check_draw_coordinates!(position);
@@ -261,7 +263,7 @@ impl GraphicsPainter {
     }
 
     /// Draws a rectangle with the two corners but only at the positions where the stencil is not set.
-    /// This is meant to be used with ['draw_circle_into_stencil'].
+    /// This is meant to be used with *draw_circle_into_stencil*.
     fn draw_rectangle_conditional_stencil(
         &self,
         lower_left: [f32; 2],
@@ -340,6 +342,21 @@ impl GraphicsPainter {
             self.draw_circle_normal(
                 Self::CIRCLE_RADIUS,
                 Self::get_drawing_coordinates(x, y),
+                color,
+            );
+        }
+    }
+    
+    
+    /// Renders the indicated stones into the stone array with highlighted color. Indicates
+    /// if this is the first player who is winning to pick the right color. 
+    pub fn render_winning_stones(&self, is_first_player_winning: bool, list_of_positions : &Vec<(usize, usize)>) {
+        let color = if is_first_player_winning { Color::LightYellow } else { Color::LightBlue };
+        
+        for (column, row) in list_of_positions {
+            self.draw_circle_normal(
+                Self::CIRCLE_RADIUS,
+                Self::get_drawing_coordinates(*column, *row),
                 color,
             );
         }
