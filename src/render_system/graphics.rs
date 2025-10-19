@@ -15,6 +15,7 @@ pub enum Color {
     Blue,
     LightBlue,
     Grey,
+    DarkGrey,
 }
 
 /// Generates an RGB value for any of the Colors indicated.
@@ -25,7 +26,8 @@ fn get_color_vector(color: Color) -> [f32; 3] {
         Color::LightYellow => [1.0, 0.91, 0.0],
         Color::Blue => [0.0, 0.28, 0.67],
         Color::LightBlue => [0.0, 0.58, 1.0],
-        Color::Grey => [0.25, 0.25, 0.25],
+        Color::Grey => [0.5, 0.5, 0.5],
+        Color::DarkGrey => [0.3, 0.3, 0.3],
     }
 }
 
@@ -307,8 +309,7 @@ impl GraphicsPainter {
     }
 
     /// Gets a painting position above the column.
-    pub fn get_drawing_coordinates_above_column(column: usize) -> [f32; 2] {
-        debug_check_board_coordinates!(col: column);
+    pub const fn get_drawing_coordinates_above_column(column: usize) -> [f32; 2] {
         [
             (column as f32 / BOARD_WIDTH as f32) * 2.0 - 1.0 + 1.0 / BOARD_WIDTH as f32,
             (6.0 / BOARD_WIDTH as f32) * 2.0 - 1.0 + 1.0 / BOARD_WIDTH as f32,

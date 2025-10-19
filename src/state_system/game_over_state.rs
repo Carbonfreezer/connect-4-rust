@@ -9,30 +9,35 @@ pub struct GameOverState {
     end_result: GameResult,
     highlighted_stones: Vec<(usize, usize)>,
     exit_pressed: bool,
-    central_position: [f32; 2],
-    lower_position: [f32; 2],
-    upper_position: [f32; 2],
 }
+
+const CENTRAL_POSITION: [f32; 2] = GraphicsPainter::get_drawing_coordinates_above_column(3);
+const LOWER_POSITION_OUTER: [f32; 2] = [
+    CENTRAL_POSITION[0] - GraphicsPainter::CIRCLE_RADIUS,
+    CENTRAL_POSITION[1] - GraphicsPainter::CIRCLE_RADIUS,
+];
+
+const UPPER_POSITION_OUTER: [f32; 2] = [
+    CENTRAL_POSITION[0] + GraphicsPainter::CIRCLE_RADIUS,
+    CENTRAL_POSITION[1] + GraphicsPainter::CIRCLE_RADIUS,
+];
+
+const LOWER_POSITION_INNER: [f32; 2] = [
+    CENTRAL_POSITION[0] - GraphicsPainter::CIRCLE_RADIUS * 0.8,
+    CENTRAL_POSITION[1] - GraphicsPainter::CIRCLE_RADIUS * 0.8,
+];
+
+const UPPER_POSITION_INNER: [f32; 2] = [
+    CENTRAL_POSITION[0] + GraphicsPainter::CIRCLE_RADIUS * 0.8,
+    CENTRAL_POSITION[1] + GraphicsPainter::CIRCLE_RADIUS * 0.8,
+];
 
 impl GameOverState {
     pub fn new() -> GameOverState {
-        let central_position = GraphicsPainter::get_drawing_coordinates_above_column(3);
-        let lower_position = [
-            central_position[0] - GraphicsPainter::CIRCLE_RADIUS,
-            central_position[1] - GraphicsPainter::CIRCLE_RADIUS,
-        ];
-        let upper_position = [
-            central_position[0] + GraphicsPainter::CIRCLE_RADIUS,
-            central_position[1] + GraphicsPainter::CIRCLE_RADIUS,
-        ];
-        
         GameOverState {
             end_result: GameResult::Pending,
             highlighted_stones: Vec::new(),
             exit_pressed: false,
-            central_position,
-            lower_position,
-            upper_position,
         }
     }
 }
@@ -62,8 +67,8 @@ impl GameState for GameOverState {
 
     /// Checks if the exit button got pressed.
     fn mouse_click(&mut self, position: [f32; 2]) {
-        let diff_x = (position[0] - self.central_position[0]).abs();
-        let diff_y = (position[1] - self.central_position[1]).abs();
+        let diff_x = (position[0] - CENTRAL_POSITION[0]).abs();
+        let diff_y = (position[1] - CENTRAL_POSITION[1]).abs();
 
         self.exit_pressed =
             (diff_x < GraphicsPainter::CIRCLE_RADIUS) && (diff_y < GraphicsPainter::CIRCLE_RADIUS);
@@ -74,20 +79,21 @@ impl GameState for GameOverState {
         graphics.render_board(&black_board.game_board);
 
         // The button.
-        graphics.draw_rectangle_normal(self.lower_position, self.upper_position, Color::Grey);
+        graphics.draw_rectangle_normal(LOWER_POSITION_OUTER, UPPER_POSITION_OUTER, Color::DarkGrey);
+        graphics.draw_rectangle_normal(LOWER_POSITION_INNER, UPPER_POSITION_INNER, Color::Grey);
         // Eventually the highlighted stones and button inset.
         if self.end_result == GameResult::FirstPlayerWon {
             graphics.render_winning_stones(true, &self.highlighted_stones);
             graphics.draw_circle_normal(
                 GraphicsPainter::CIRCLE_RADIUS * 0.6,
-                self.central_position,
+                CENTRAL_POSITION,
                 Color::LightYellow,
             );
         } else if self.end_result == GameResult::SecondPlayerWon {
             graphics.render_winning_stones(false, &self.highlighted_stones);
             graphics.draw_circle_normal(
                 GraphicsPainter::CIRCLE_RADIUS * 0.6,
-                self.central_position,
+                CENTRAL_POSITION,
                 Color::LightBlue,
             );
         }
