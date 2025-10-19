@@ -1,7 +1,7 @@
 //! In this state the real computation happens, and also the player animation is executed to
 //! cover up some calculation time. The calculation happens asynchronously in a Tokio thread.
 
-use tokio::sync::oneshot;
+use std::thread;
 use crate::render_system::stone_animator::StoneAnimator;
 use crate::board_logic::move_ai::MoveAI;
 use crate::render_system::graphics::GraphicsPainter;
@@ -30,9 +30,10 @@ impl GameState for ComputerCalculationState {
         let (tx, rx) = oneshot::channel();
         self.receiver = Some(rx);
         // Kick of the calculation.
-        tokio::spawn(async move {
+        thread::spawn(move || {
            let mut ai = MoveAI::new(local_board);
-            tx.send( ai.get_best_move()).expect("Receiver already dropped.");
+            let result = ai.get_best_move();
+            tx.send( result ).expect("Receiver already dropped.");
         });
 
         // Start the animation.

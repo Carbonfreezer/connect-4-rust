@@ -14,8 +14,7 @@ use glume::gl;
 use glume::window::{Event, MouseButton};
 use std::time::Duration;
 
-#[tokio::main]
-async fn main() {
+fn main() {
     let window_config = glume::window::WindowConfiguration {
         title: "4 Connect".to_string(),
         size: (800, 800),
