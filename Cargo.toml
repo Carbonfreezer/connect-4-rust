@@ -5,4 +5,3 @@ edition = "2024"
 
 [dependencies]
 glume = "0.7.2"
-oneshot = "0.1.11"

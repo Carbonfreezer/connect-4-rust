@@ -1,22 +1,23 @@
 //! In this state the real computation happens, and also the player animation is executed to
 //! cover up some calculation time. The calculation happens asynchronously in a Tokio thread.
 
-use std::thread;
-use crate::render_system::stone_animator::StoneAnimator;
 use crate::board_logic::move_ai::MoveAI;
 use crate::render_system::graphics::GraphicsPainter;
+use crate::render_system::stone_animator::StoneAnimator;
 use crate::state_system::game_state::{Blackboard, GameState, GameStateIndex};
+use std::sync::mpsc;
+use std::thread;
 
 pub struct ComputerCalculationState {
     animator: StoneAnimator,
-    receiver: Option<oneshot::Receiver<usize>>
+    receiver: Option<mpsc::Receiver<usize>>,
 }
 
 impl ComputerCalculationState {
     pub fn new() -> ComputerCalculationState {
         ComputerCalculationState {
-            animator : StoneAnimator::new(),
-            receiver : None
+            animator: StoneAnimator::new(),
+            receiver: None,
         }
     }
 }
@@ -27,28 +28,30 @@ impl GameState for ComputerCalculationState {
 
         // Pre make the player move.
         local_board.apply_move_on_column(black_board.player_choice, false);
-        let (tx, rx) = oneshot::channel();
+        let (tx, rx) = mpsc::channel();
         self.receiver = Some(rx);
         // Kick of the calculation.
         thread::spawn(move || {
-           let mut ai = MoveAI::new(local_board);
+            let mut ai = MoveAI::new(local_board);
             let result = ai.get_best_move();
-            tx.send( result ).expect("Receiver already dropped.");
+            tx.send(result).expect("Receiver already dropped.");
         });
 
         // Start the animation.
-        self.animator.start_animating(&black_board.game_board, black_board.player_choice, false );
+        self.animator
+            .start_animating(&black_board.game_board, black_board.player_choice, false);
     }
 
     fn update(&mut self, delta_time: f32, black_board: &mut Blackboard) -> Option<GameStateIndex> {
         if self.animator.is_animating() {
             self.animator.update(delta_time);
             if !self.animator.is_animating() {
-                black_board.game_board.apply_move_on_column(black_board.player_choice, false);
+                black_board
+                    .game_board
+                    .apply_move_on_column(black_board.player_choice, false);
             }
             return None;
         }
-
 
         if let Some(receiver) = self.receiver.as_mut() {
             if let Ok(result) = receiver.try_recv() {
@@ -57,9 +60,7 @@ impl GameState for ComputerCalculationState {
             }
         }
 
-
         None
-
     }
 
     fn mouse_click(&mut self, _: [f32; 2]) {
@@ -74,4 +75,3 @@ impl GameState for ComputerCalculationState {
         graphics.render_board(&black_board.game_board);
     }
 }
-
