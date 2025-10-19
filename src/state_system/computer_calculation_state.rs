@@ -1,6 +1,7 @@
 //! In this state the real computation happens, and also the player animation is executed to
 //! cover up some calculation time. The calculation happens asynchronously in a Tokio thread.
 
+use crate::board_logic::bit_board::BitBoard;
 use crate::board_logic::move_ai::MoveAI;
 use crate::render_system::graphics::GraphicsPainter;
 use crate::render_system::stone_animator::StoneAnimator;
@@ -10,14 +11,33 @@ use std::thread;
 
 pub struct ComputerCalculationState {
     animator: StoneAnimator,
-    receiver: Option<mpsc::Receiver<usize>>,
+    receiver: mpsc::Receiver<usize>,
+    sender: mpsc::Sender<BitBoard>,
 }
 
 impl ComputerCalculationState {
     pub fn new() -> ComputerCalculationState {
+        let (result_sender, result_receiver): (mpsc::Sender<usize>, mpsc::Receiver<usize>) =
+            mpsc::channel();
+        let (task_sender, task_receiver): (mpsc::Sender<BitBoard>, mpsc::Receiver<BitBoard>) =
+            mpsc::channel();
+
+        // Kick of a worker thread, that runs in the background.
+        thread::spawn(move || {
+            loop {
+                let local_board = task_receiver.recv().unwrap();
+                let mut ai = MoveAI::new(local_board);
+                let result = ai.get_best_move();
+                result_sender
+                    .send(result)
+                    .unwrap();
+            }
+        });
+
         ComputerCalculationState {
             animator: StoneAnimator::new(),
-            receiver: None,
+            receiver: result_receiver,
+            sender: task_sender,
         }
     }
 }
@@ -25,17 +45,12 @@ impl ComputerCalculationState {
 impl GameState for ComputerCalculationState {
     fn enter(&mut self, black_board: &Blackboard) {
         let mut local_board = black_board.game_board.clone();
-
         // Pre make the player move.
         local_board.apply_move_on_column(black_board.player_choice, false);
-        let (tx, rx) = mpsc::channel();
-        self.receiver = Some(rx);
-        // Kick of the calculation.
-        thread::spawn(move || {
-            let mut ai = MoveAI::new(local_board);
-            let result = ai.get_best_move();
-            tx.send(result).expect("Receiver already dropped.");
-        });
+
+        self.sender
+            .send(local_board)
+            .unwrap();
 
         // Start the animation.
         self.animator
@@ -53,11 +68,9 @@ impl GameState for ComputerCalculationState {
             return None;
         }
 
-        if let Some(receiver) = self.receiver.as_mut() {
-            if let Ok(result) = receiver.try_recv() {
-                black_board.computer_choice = result;
-                return Some(GameStateIndex::ComputerExecutionState);
-            }
+        if let Ok(result) = self.receiver.try_recv() {
+            black_board.computer_choice = result;
+            return Some(GameStateIndex::ComputerExecutionState);
         }
 
         None
