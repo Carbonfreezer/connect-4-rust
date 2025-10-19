@@ -10,15 +10,29 @@ pub struct GameOverState {
     highlighted_stones: Vec<(usize, usize)>,
     exit_pressed: bool,
     central_position: [f32; 2],
+    lower_position: [f32; 2],
+    upper_position: [f32; 2],
 }
 
 impl GameOverState {
     pub fn new() -> GameOverState {
+        let central_position = GraphicsPainter::get_drawing_coordinates_above_column(7);
+        let lower_position = [
+            central_position[0] - GraphicsPainter::CIRCLE_RADIUS,
+            central_position[1] - GraphicsPainter::CIRCLE_RADIUS,
+        ];
+        let upper_position = [
+            central_position[0] + GraphicsPainter::CIRCLE_RADIUS,
+            central_position[1] + GraphicsPainter::CIRCLE_RADIUS,
+        ];
+        
         GameOverState {
             end_result: GameResult::Pending,
             highlighted_stones: Vec::new(),
             exit_pressed: false,
-            central_position: GraphicsPainter::get_drawing_coordinates_above_column(7),
+            central_position,
+            lower_position,
+            upper_position,
         }
     }
 }
@@ -60,16 +74,7 @@ impl GameState for GameOverState {
         graphics.render_board(&black_board.game_board);
 
         // The button.
-        let lower_pos = [
-            self.central_position[0] - GraphicsPainter::CIRCLE_RADIUS,
-            self.central_position[1] - GraphicsPainter::CIRCLE_RADIUS,
-        ];
-        let upper_pos = [
-            self.central_position[0] + GraphicsPainter::CIRCLE_RADIUS,
-            self.central_position[1] + GraphicsPainter::CIRCLE_RADIUS,
-        ];
-        graphics.draw_rectangle_normal(lower_pos, upper_pos, Color::Grey);
-
+        graphics.draw_rectangle_normal(self.lower_position, self.upper_position, Color::Grey);
         // Eventually the highlighted stones and button inset.
         if self.end_result == GameResult::FirstPlayerWon {
             graphics.render_winning_stones(true, &self.highlighted_stones);
