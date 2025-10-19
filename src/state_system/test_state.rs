@@ -82,11 +82,11 @@ impl GameState for TestState {
         }
     }
 
-    fn draw(&self, graphics: &GraphicsPainter, board: &Blackboard) {
+    fn draw(&self, graphics: &GraphicsPainter, black_board: &Blackboard) {
         if self.animator.is_animating() {
             self.animator.draw(graphics);
         }
-        graphics.render_board(&board.game_board);
+        graphics.render_board(&black_board.game_board);
 
         if self.end_value == GameResult::FirstPlayerWon {
             graphics.render_winning_stones(true, &self.winning_stones);

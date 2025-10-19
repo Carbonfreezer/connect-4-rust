@@ -37,11 +37,11 @@ impl Blackboard {
 /// A general interface for a game state, to administrate the different phases we can be in.
 pub trait GameState {
     /// Performs initialization when entering the game state. Data may be read out from the blackboard here.
-    fn enter(&mut self, blackboard: &Blackboard);
+    fn enter(&mut self, black_board: &Blackboard);
 
     /// Updates the game state with the passed time and returns a new game state when required.
     /// May read and update the blackboard.
-    fn update(&mut self, delta_time: f32, board: &mut Blackboard) -> Option<GameStateIndex>;
+    fn update(&mut self, delta_time: f32, black_board: &mut Blackboard) -> Option<GameStateIndex>;
 
     /// Informs the game state when a mouse has been clicked with the position.
     /// The blackboard is not handed over intentionally. Mouse interaction information
