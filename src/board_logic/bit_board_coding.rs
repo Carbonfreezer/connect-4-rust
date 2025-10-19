@@ -140,27 +140,23 @@ pub fn check_for_winning(board: u64) -> bool {
 }
 
 /// Generates a board representation, where bits are set that belong to a winning combination.
-/// If there is none, a None is returned.
-pub fn get_winning_board(board: u64) -> Option<u64> {
+pub fn get_winning_board(board: u64) -> u64 {
+    let mut result = 0;
     for bit_shift in DIR_INCREMENT {
         let d = clip_shift(board, bit_shift) & board;
         let dd = clip_shift(clip_shift(d, bit_shift), bit_shift);
         let mut flag = dd & d;
-        if flag == 0 {
-            continue;
-        }
+
         // Now the last bit of every winning constellation is set.
-        let mut result = flag;
+        result |= flag;
         // We can safely shift back, because we came from there.
         for _ in 0..3 {
             flag = flag >> bit_shift;
             result |= flag;
         }
-
-        return Some(result);
     }
 
-    None
+    result
 }
 
 /// Gets an iterator for all possible moves for the ai.

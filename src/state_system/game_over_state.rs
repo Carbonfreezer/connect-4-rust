@@ -43,7 +43,7 @@ impl GameState for GameOverState {
         assert_ne!(
             state,
             GameResult::Pending,
-            "The game should have been pending now"
+            "The game should have been ended now"
         );
         self.end_result = state;
         self.highlighted_stones = list.unwrap_or(Vec::new());

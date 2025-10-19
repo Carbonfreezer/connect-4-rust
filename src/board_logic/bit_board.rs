@@ -206,12 +206,12 @@ impl BitBoard {
         if check_for_winning(first_board) {
             (
                 GameResult::FirstPlayerWon,
-                Some(get_position_iterator(get_winning_board(first_board).unwrap()).collect()),
+                Some(get_position_iterator(get_winning_board(first_board)).collect()),
             )
         } else if check_for_winning(second_board) {
             (
                 GameResult::SecondPlayerWon,
-                Some(get_position_iterator(get_winning_board(second_board).unwrap()).collect()),
+                Some(get_position_iterator(get_winning_board(second_board)).collect()),
             )
         } else if self.check_for_draw_if_not_winning() {
             (GameResult::Draw, None)
