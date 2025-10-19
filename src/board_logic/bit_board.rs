@@ -131,12 +131,12 @@ impl BitBoard {
     }
 
     /// The apply move as intended to be used in the ai, as this will always refer to the own stone.
-    fn apply_move_active(&mut self, coded_move: u64) {
+    fn apply_move_own_stone(&mut self, coded_move: u64) {
         self.own_stones |= coded_move;
     }
 
     /// Revokes the move as used in the ai.
-    fn revoke_move_active(&mut self, coded_move: u64) {
+    fn revoke_move_own_stone(&mut self, coded_move: u64) {
         self.own_stones ^= coded_move;
     }
 
