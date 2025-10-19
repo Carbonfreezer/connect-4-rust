@@ -1,9 +1,11 @@
-mod game_state;
-mod start_state;
+mod state_system;
+
 mod graphics;
-mod player_start_selection;
 mod bit_board;
 mod bit_board_coding;
+
+
+use state_system::*;
 
 use std::time::Duration;
 use glume::window::{Event, MouseButton};
