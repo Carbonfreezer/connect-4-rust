@@ -43,6 +43,7 @@ async fn main()  {
     state_array[current_index].enter(&black_board);
     let graphics = GraphicsPainter::new();
 
+    // Requested time between two frames.
     const DELTA_TIME: f32 = 0.02;
 
     let mut init = false;
@@ -76,8 +77,8 @@ async fn main()  {
 
             Event::Tick(tick) => {
                 let delta_time = tick.ticks_passed as f32 * DELTA_TIME;
-                let res = state_array[current_index].update(delta_time, &mut black_board);
-                if let Some(follow_index) = res {
+                let update_result = state_array[current_index].update(delta_time, &mut black_board);
+                if let Some(follow_index) = update_result {
                     current_index = follow_index as usize;
                     state_array[current_index].enter(&black_board);
                 }

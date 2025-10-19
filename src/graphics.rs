@@ -1,12 +1,11 @@
-use glume::gl;
-use glume::gl::types::*;
 use crate::bit_board::BitBoard;
 use crate::bit_board_coding::{BOARD_HEIGHT, BOARD_WIDTH};
 use crate::debug_check_coordinates;
+use glume::gl;
+use glume::gl::types::*;
 
 /// Represents color types we can draw elements with.
-pub enum Color
-{
+pub enum Color {
     Brown,
     Yellow,
     LightYellow,
@@ -14,28 +13,27 @@ pub enum Color
     LightBlue,
 }
 
-fn get_color_vector(color : Color) -> [f32; 3] {
+fn get_color_vector(color: Color) -> [f32; 3] {
     match color {
-        Color::Brown => [0.48,0.25,0.0],
-        Color::Yellow => [0.9,0.8,0.04],
-        Color::LightYellow => [1.0,0.91,0.0],
-        Color::Blue => [0.0,0.28,0.67],
-        Color::LightBlue => [0.0, 0.58, 1.0]
+        Color::Brown => [0.48, 0.25, 0.0],
+        Color::Yellow => [0.9, 0.8, 0.04],
+        Color::LightYellow => [1.0, 0.91, 0.0],
+        Color::Blue => [0.0, 0.28, 0.67],
+        Color::LightBlue => [0.0, 0.58, 1.0],
     }
 }
-
 
 /// The graphics painter is capable of painting circles and rectangles. It is also capable of stenceling
 /// out circles of rectangles. The circle stencils have to be painted upfront.
 pub struct GraphicsPainter {
     shader_program: GLuint,
     circle_vba: GLuint,
-    num_circle_vertices : GLint,
+    num_circle_vertices: GLint,
     rectangle_vba: GLuint,
-    num_rectangle_vertices : GLint,
+    num_rectangle_vertices: GLint,
     translation: GLint,
     color: GLint,
-    scale : GLint,
+    scale: GLint,
 }
 
 impl GraphicsPainter {
@@ -43,7 +41,7 @@ impl GraphicsPainter {
         let shader_program = Self::create_shader_program();
         let (scale, translation, color) = Self::get_shader_constants(shader_program);
         let (circle_vba, num_circle_vertices) = Self::create_circle_vba();
-        let (rectangle_vba, num_rectangle_vertices)  = Self::create_rectangle_vba();
+        let (rectangle_vba, num_rectangle_vertices) = Self::create_rectangle_vba();
 
         GraphicsPainter {
             shader_program,
@@ -57,7 +55,6 @@ impl GraphicsPainter {
         }
     }
 
-
     fn compile_shader(source: &str, shader_type: GLenum) -> GLuint {
         let shader = unsafe { gl::CreateShader(shader_type) };
         let c_str = std::ffi::CString::new(source).unwrap();
@@ -68,7 +65,7 @@ impl GraphicsPainter {
         shader
     }
 
-    fn create_shader_program() -> GLuint  {
+    fn create_shader_program() -> GLuint {
         let v_code = r#"
             #version 330
             uniform vec2 translation;
@@ -111,7 +108,7 @@ impl GraphicsPainter {
         let color_str = std::ffi::CString::new("PaintColor").unwrap();
         let translation_str = std::ffi::CString::new("translation").unwrap();
         let scale_str = std::ffi::CString::new("scale").unwrap();
-        let scale : GLint;
+        let scale: GLint;
         let translation;
         let color;
         unsafe {
@@ -122,7 +119,6 @@ impl GraphicsPainter {
 
         (scale, translation, color)
     }
-
 
     /// Helper function to create a vbo and vba
     fn create_vba(vertex_data: &[f32]) -> GLuint {
@@ -165,7 +161,7 @@ impl GraphicsPainter {
 
         for i in 0..POINTS_IN_CIRCLE {
             let angle = i as f32 * 2.0 * std::f32::consts::PI / POINTS_IN_CIRCLE as f32;
-            vertices.push (angle.cos());
+            vertices.push(angle.cos());
             vertices.push(angle.sin());
         }
 
@@ -173,12 +169,18 @@ impl GraphicsPainter {
     }
 
     fn create_rectangle_vba() -> (GLuint, GLint) {
-
-        let vertices : [f32; 8]   = [-0.5, -0.5, 0.5, -0.5, 0.5, 0.5, -0.5, 0.5];
+        let vertices: [f32; 8] = [-0.5, -0.5, 0.5, -0.5, 0.5, 0.5, -0.5, 0.5];
         (Self::create_vba(&vertices), 4)
     }
 
-    fn draw_geometry(&self, vba: GLuint, num_vertices : GLint,  scale : [f32; 2], translation : [f32; 2], color : Color) {
+    fn draw_geometry(
+        &self,
+        vba: GLuint,
+        num_vertices: GLint,
+        scale: [f32; 2],
+        translation: [f32; 2],
+        color: Color,
+    ) {
         let color_vec = get_color_vector(color);
 
         unsafe {
@@ -192,15 +194,21 @@ impl GraphicsPainter {
     }
 
     /// Draws a circle to be visible on screen.
-    pub fn draw_circle_normal(&self, radius : f32, position: [f32; 2], color: Color) {
+    pub fn draw_circle_normal(&self, radius: f32, position: [f32; 2], color: Color) {
         let scale = [radius, radius];
-        self.draw_geometry(self.circle_vba, self.num_circle_vertices, scale, position, color);
+        self.draw_geometry(
+            self.circle_vba,
+            self.num_circle_vertices,
+            scale,
+            position,
+            color,
+        );
     }
 
     /// Draws the circle only into the stencil buffer. This is meant to be used in conjunction
     /// with the ['draw_rectangle_conditional_stencil'], that skips drawing the rectangle, where the
     /// mask has been drawn.
-    fn draw_circle_into_stencil(&self, radius : f32, position: [f32; 2]) {
+    fn draw_circle_into_stencil(&self, radius: f32, position: [f32; 2]) {
         let scale = [radius, radius];
 
         // Draw into stencil only.
@@ -209,7 +217,13 @@ impl GraphicsPainter {
             gl::ColorMask(gl::FALSE, gl::FALSE, gl::FALSE, gl::FALSE);
             gl::StencilOp(gl::INCR, gl::INCR, gl::INCR);
         }
-        self.draw_geometry(self.circle_vba, self.num_circle_vertices, scale, position, Color::Brown);
+        self.draw_geometry(
+            self.circle_vba,
+            self.num_circle_vertices,
+            scale,
+            position,
+            Color::Brown,
+        );
         unsafe {
             gl::StencilMask(0);
             gl::ColorMask(gl::TRUE, gl::TRUE, gl::TRUE, gl::TRUE);
@@ -217,66 +231,98 @@ impl GraphicsPainter {
         }
     }
 
-    
     /// Draws a rectangle with the two corners (and color) given.
-    pub fn draw_rectangle_normal(&self, lower_left: [f32; 2] , upper_right: [f32; 2], color: Color) {
-        let translation = [(lower_left[0] + upper_right[0]) / 2.0,
-            (lower_left[1] + upper_right[1]) / 2.0];
-        let scale = [upper_right[0] - lower_left[0], upper_right[1] - lower_left[1]];
+    pub fn draw_rectangle_normal(&self, lower_left: [f32; 2], upper_right: [f32; 2], color: Color) {
+        let translation = [
+            (lower_left[0] + upper_right[0]) / 2.0,
+            (lower_left[1] + upper_right[1]) / 2.0,
+        ];
+        let scale = [
+            upper_right[0] - lower_left[0],
+            upper_right[1] - lower_left[1],
+        ];
 
-        self.draw_geometry(self.rectangle_vba, self.num_rectangle_vertices, scale, translation, color);
+        self.draw_geometry(
+            self.rectangle_vba,
+            self.num_rectangle_vertices,
+            scale,
+            translation,
+            color,
+        );
     }
 
     /// Draws a rectangle with the two corners but only at the positions where the stencil is not set.
-    /// This is meant to be used with ['draw_circle_into_stencil']. 
-    fn draw_rectangle_conditional_stencil(&self, lower_left: [f32; 2] , upper_right: [f32; 2], color: Color) {
-        let translation = [(lower_left[0] + upper_right[0]) / 2.0,
-            (lower_left[1] + upper_right[1]) / 2.0];
-        let scale = [upper_right[0] - lower_left[0], upper_right[1] - lower_left[1]];
+    /// This is meant to be used with ['draw_circle_into_stencil'].
+    fn draw_rectangle_conditional_stencil(
+        &self,
+        lower_left: [f32; 2],
+        upper_right: [f32; 2],
+        color: Color,
+    ) {
+        let translation = [
+            (lower_left[0] + upper_right[0]) / 2.0,
+            (lower_left[1] + upper_right[1]) / 2.0,
+        ];
+        let scale = [
+            upper_right[0] - lower_left[0],
+            upper_right[1] - lower_left[1],
+        ];
 
         unsafe {
             gl::StencilFunc(gl::EQUAL, 0, 0xff);
         }
-        self.draw_geometry(self.rectangle_vba, self.num_rectangle_vertices, scale, translation, color);
+        self.draw_geometry(
+            self.rectangle_vba,
+            self.num_rectangle_vertices,
+            scale,
+            translation,
+            color,
+        );
 
         unsafe {
             gl::StencilFunc(gl::ALWAYS, 0, 0xff);
         }
-
     }
 
-
     /// The radius with which we want to draw the stones in the below function.
-    const CIRCLE_RADIUS : f32 = 1.0 / 7.0 * 0.8;
+    const CIRCLE_RADIUS: f32 = 1.0 / BOARD_WIDTH as f32 * 0.8;
 
     /// Returns the drawing coordinates for an indicated stone position.
-    fn get_drawing_coordinates(x_stone : usize, y_stone : usize) -> [f32;2] {
-        debug_check_coordinates!(x_stone,y_stone);
-        [(x_stone as f32 / 7.0) * 2.0 - 1.0 + 1.0 / 7.0,
-         (y_stone as f32 / 7.0) * 2.0 - 1.0 + 1.0 / 7.0]
+    fn get_drawing_coordinates(x_stone: usize, y_stone: usize) -> [f32; 2] {
+        debug_check_coordinates!(x_stone, y_stone);
+        [
+            (x_stone as f32 / BOARD_WIDTH as f32) * 2.0 - 1.0 + 1.0 / BOARD_WIDTH as f32,
+            (y_stone as f32 / BOARD_WIDTH as f32) * 2.0 - 1.0 + 1.0 / BOARD_WIDTH as f32,
+        ]
     }
 
     /// Renders the board as is with all the stones in there.
-    pub fn render_board(&self, board : &BitBoard) {
-
+    pub fn render_board(&self, board: &BitBoard) {
         // First we draw the stencil circles.
         for x in 0..BOARD_WIDTH {
             for y in 0..BOARD_HEIGHT {
-                debug_check_coordinates!(x,y);
-                self.draw_circle_into_stencil(Self::CIRCLE_RADIUS, Self::get_drawing_coordinates(x,y));
+                debug_check_coordinates!(x, y);
+                self.draw_circle_into_stencil(
+                    Self::CIRCLE_RADIUS,
+                    Self::get_drawing_coordinates(x, y),
+                );
             }
         }
 
-        self.draw_rectangle_conditional_stencil([-1.0, -1.0], [1.0, 1.0 - 2.0 / 7.0], Color::Brown);
+        self.draw_rectangle_conditional_stencil(
+            [-1.0, -1.0],
+            [1.0, 1.0 - 2.0 / BOARD_WIDTH as f32],
+            Color::Brown,
+        );
 
-        for (x,y,first) in board.get_board_positioning() {
-            debug_check_coordinates!(x,y);
-            let color = if first {Color::Yellow} else {Color::Blue};
-            self.draw_circle_normal(Self::CIRCLE_RADIUS, Self::get_drawing_coordinates(x,y),  color);
+        for (x, y, first) in board.get_board_positioning() {
+            debug_check_coordinates!(x, y);
+            let color = if first { Color::Yellow } else { Color::Blue };
+            self.draw_circle_normal(
+                Self::CIRCLE_RADIUS,
+                Self::get_drawing_coordinates(x, y),
+                color,
+            );
         }
-
     }
-    
 }
-
-

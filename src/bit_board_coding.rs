@@ -11,7 +11,7 @@
 //!   8   9    10   11   12   13   14  (15)  
 //!   0   1     2    3    4    5    6  ( 7)  
 //!  
-//! The number in parantheses are sentinal guards.   
+//! The number in parentheses are sentinel guards.   
 
 
 /// The width of the board.
@@ -23,6 +23,7 @@ pub const BOARD_HEIGHT : usize = 6;
 
 /// Verifier macros for coordinates, can be used with x and y coordinates for a position, or a 
 /// column only. Checks for the type to be usize and if they do not exceed the desired range,
+/// 
 /// # Example
 /// ```
 /// let x : usize = 2;
@@ -164,6 +165,7 @@ pub fn get_all_possible_moves(board : u64) -> impl Iterator<Item = u64> {
 pub fn get_move_information(coded_move : u64) -> Option<(usize, usize)> {
     for x in 0..BOARD_WIDTH {
         for y in 0..BOARD_HEIGHT {
+            debug_check_coordinates!(x,y);
             if coded_move & (1 << (x + 8 * y)) > 0 {
                 return Some((x, y));
             }
