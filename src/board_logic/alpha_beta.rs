@@ -34,8 +34,9 @@ pub struct PresortResult {
     pub best_move : usize,
     /// The list with the remainder we still have to process. Contains the coded board,
     /// the move index and the evaluation. The position is to avoid recalculating the has structs. 
-    pub working_list : Vec<(u64, usize, u32, SymmetryIndependentPosition)>
+    pub working_list : Vec<(u64, usize, u32)>
 }
+
 
 impl AlphaBeta {
     /// The bit board is handed over intentionally with a move situations.
@@ -57,7 +58,7 @@ impl AlphaBeta {
         let mut local_move = DUMMY_MOVE;
 
         let mut test_board = self.bit_board.clone();
-        let mut local_sorter = Vec::<(u64, usize, u32, SymmetryIndependentPosition)>::new();
+        let mut local_sorter = Vec::<(u64, usize, u32)>::new();
         for (coded, slot) in self.bit_board.get_all_possible_moves() {
             test_board.own_stones |= coded;
 
@@ -93,14 +94,14 @@ impl AlphaBeta {
                         3 => 7,
                         _ => panic!("Invalid slot {}!", slot)
                     };
-                    local_sorter.push((coded, slot, val, search_key));
+                    local_sorter.push((coded, slot, val));
                 }
             }
 
             // Retake move.
             test_board.own_stones ^= coded;
         };
-        local_sorter.sort_by_key(|(_, _, val, _)| u32::MAX - *val);
+        local_sorter.sort_by_key(|(_, _, val)| u32::MAX - *val);
         PresortResult {
             working_list : local_sorter,
             max_score : local_max,
@@ -118,10 +119,16 @@ impl AlphaBeta {
         // Then we check for draw
         if (self.bit_board.own_stones | self.bit_board.opponent_stones) == FULL_BOARD_MASK {return (DUMMY_MOVE, 0)};
 
+        let search_key = self.bit_board.get_symmetry_independent_position();
+
+        // Try to look it up in the table.
+        if let Some(result_value) = self.hash_map.get(&search_key) {
+            return (DUMMY_MOVE, *result_value);
+        }
+
 
         let mut best_value = - SCORE_GUARD;
         let mut best_slot= 0;
-        let mut best_hash_key = SymmetryIndependentPosition {own: 0,opp: 0};
 
         let todo_list = self.get_pre_sorted_move_list();
         let mut alpha = alpha;
@@ -134,7 +141,7 @@ impl AlphaBeta {
         if best_value > alpha {alpha = best_value;}
 
         // We start searching now.
-        for (coded_move, slot, _, hashKey) in todo_list.working_list.iter() {
+        for (coded_move, slot, _) in todo_list.working_list.iter() {
             // Apply move.
             self.bit_board.own_stones |= coded_move;
             self.bit_board.swap_players();
@@ -150,7 +157,6 @@ impl AlphaBeta {
             if adjusted_result > best_value {
                 best_value = adjusted_result;
                 best_slot = *slot;
-                best_hash_key = hashKey.clone();
                 if adjusted_result > alpha {alpha = adjusted_result; }
             }
 
@@ -159,7 +165,7 @@ impl AlphaBeta {
         }
 
         // Insert value into hashmap.
-        self.hash_map.insert(best_hash_key, best_value);
+        self.hash_map.insert(search_key, best_value);
 
         (best_slot, best_value)
     }
