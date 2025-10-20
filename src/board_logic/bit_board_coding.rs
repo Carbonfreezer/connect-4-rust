@@ -194,10 +194,8 @@ pub fn get_winning_board(board: u64) -> u64 {
 /// move index.
 #[inline(always)]
 pub fn get_all_possible_moves(board: u64) -> impl Iterator<Item = (u64, usize)> {
-
-    const COLUMN_ORDER: [usize; 7] = [3, 2, 4, 1, 5, 0, 6];  // Center-first!
     let comb = (clip_shift(board, DIR_INCREMENT[1]) | BOTTOM_FILL_MASK) ^ board;
-    COLUMN_ORDER
+        (0..7)
         .into_iter()
         .map(move |x| (comb & COLUMN_MASK[x], x))
         .filter(|&x| x.0 != 0)

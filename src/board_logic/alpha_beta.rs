@@ -68,13 +68,6 @@ impl AlphaBeta {
             if check_for_winning(test_board.own_stones) {
                 local_max = MAXIMUM_SCORE;
                 local_move = slot;
-                test_board.own_stones ^= coded;
-                // Reached optimum
-                return PresortResult {
-                    working_list: Vec::new(),  // No further moves.
-                    max_score: local_max,
-                    best_move: local_move
-                };
             } else if (test_board.own_stones | test_board.opponent_stones) == FULL_BOARD_MASK {
                 if local_max < 0
                 {
@@ -99,15 +92,6 @@ impl AlphaBeta {
                     if (score) > local_max {
                         local_max = -*found_value;
                         local_move = slot;
-                    }
-                    // Early exit bei perfektem Score
-                    if score >= MAXIMUM_SCORE {
-                        test_board.own_stones ^= coded;
-                        return PresortResult {
-                            working_list: Vec::new(),
-                            max_score: local_max,
-                            best_move: local_move
-                        };
                     }
                 } else {
 
@@ -183,9 +167,8 @@ impl AlphaBeta {
             let (_, new_result) = self.evaluate_next_move(-beta, -alpha, depth + 1);
             self.bit_board.swap_players();
             self.bit_board.own_stones ^= coded_move;
-
+            
             let  adjusted_result = - new_result;
-
             if adjusted_result > best_value {
                 best_value = adjusted_result;
                 best_slot = *slot;
