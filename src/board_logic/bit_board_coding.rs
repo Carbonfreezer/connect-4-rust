@@ -162,13 +162,14 @@ pub fn get_winning_board(board: u64) -> u64 {
     result
 }
 
-/// Gets an iterator for all possible moves for the ai.
+/// Gets an iterator for all possible moves for the ai. The iterator returns the move and the original
+/// move index.
 #[inline(always)]
-pub fn get_all_possible_moves(board: u64) -> impl Iterator<Item = u64> {
+pub fn get_all_possible_moves(board: u64) -> impl Iterator<Item = (u64, usize)> {
     let comb = (clip_shift(board, DIR_INCREMENT[1]) | BOTTOM_FILL_MASK) ^ board;
     (0..BOARD_WIDTH)
         .into_iter()
-        .map(move |x| comb & COLUMN_MASK[x])
-        .filter(|&x| x != 0)
+        .map(move |x| (comb & COLUMN_MASK[x], x))
+        .filter(|&x| x.0 != 0)
 }
 

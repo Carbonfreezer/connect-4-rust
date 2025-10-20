@@ -185,8 +185,9 @@ impl BitBoard {
 
 
     /// Gets an iterator of all possible moves. This method is meant for the ai.
+    /// The iterator returns the move and the original move index.
     #[inline(always)]
-    pub fn get_all_possible_moves(&self) -> impl Iterator<Item = u64> {
+    pub fn get_all_possible_moves(&self) -> impl Iterator<Item = (u64, usize)> {
         get_all_possible_moves(self.opponent_stones | self.own_stones)
     }
 
