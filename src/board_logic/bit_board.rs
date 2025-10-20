@@ -40,8 +40,8 @@ impl BitBoard {
 /// This is the symmetry independent coding that can be used for the transposition table.
 #[derive(Hash, PartialEq, Eq, Clone)]
 pub struct SymmetryIndependentPosition {
-    own: u64,
-    opp: u64,
+    pub own: u64,
+    pub opp: u64,
 }
 
 impl BitBoard {
