@@ -112,6 +112,8 @@ pub fn get_position_iterator(board: u64) -> impl Iterator<Item = (usize, usize)>
 fn clip_shift(input: u64, amount: u8) -> u64 {
     (input << amount) & FULL_BOARD_MASK
 }
+
+
 /// Gets a  representation, where the bit for the specific column is set where a move would wind up.
 /// If it is not possible to make move in that column, a 0 is returned.
 pub fn get_possible_move(board: u64, column: usize) -> u64 {
@@ -127,16 +129,16 @@ pub fn get_possible_move(board: u64, column: usize) -> u64 {
 /// Checks if the game board contains a winning constellation.
 /// Here the bit board representation really shines. Returns true
 /// if the board has one sequence of rows.
-/// 
-/// The idea is:  
-/// board:  
-/// 001111000  
-/// d:   
-/// 000111000   
-/// dd:  
-/// 000001110  
-/// dd & d  
-/// 000001000 
+///
+/// The idea is:
+/// board:
+/// 001111000
+/// d:
+/// 000111000
+/// dd:
+/// 000001110
+/// dd & d
+/// 000001000
 #[inline(always)]
 pub fn check_for_winning(board: u64) -> bool {
     for bit_shift in DIR_INCREMENT {
@@ -149,6 +151,21 @@ pub fn check_for_winning(board: u64) -> bool {
 
     false
 }
+
+
+/// Analyzes the amount of combinations we have for three stones, that can still
+/// develop into a win.
+pub fn check_for_free_three(board: u64) -> u32 {
+    let mut count = 0;
+    for bit_shift in DIR_INCREMENT {
+        let d = clip_shift(board, bit_shift) & board;
+        let three = clip_shift(d, bit_shift) & board;
+        count += three.count_ones()
+    }
+    count
+}
+
+
 
 /// Generates a board representation, where bits are set that belong to a winning combination.
 /// Makes use of the fact, that *check_for_winning* effectively collapsed a winning combination
@@ -169,8 +186,6 @@ pub fn get_winning_board(board: u64) -> u64 {
             result |= flag;
         }
     }
-
-    // result.count_ones();
 
     result
 }

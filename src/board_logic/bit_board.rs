@@ -22,11 +22,12 @@ pub enum GameResult {
 /// The bitboard has two representations for own and opponent stones.
 #[derive(Clone)]
 pub struct BitBoard {
-    own_stones: u64,
-    opponent_stones: u64,
+    pub own_stones: u64,
+    pub opponent_stones: u64,
     // The boards represents from the perspective of the computer in default.
     computer_first: bool,
 }
+
 
 impl BitBoard {
     /// Resets the board at the end of the game.
@@ -158,25 +159,7 @@ impl BitBoard {
         }
     }
 
-    /// The apply move as intended to be used in the ai, as this will always refer to the own stone.
-    #[inline(always)]
-    fn apply_move_own_stone(&mut self, coded_move: u64) {
-        self.own_stones |= coded_move;
-    }
 
-    /// Revokes the move as used in the ai.
-    #[inline(always)]
-    fn revoke_move_own_stone(&mut self, coded_move: u64) {
-        self.own_stones ^= coded_move;
-    }
-
-    /// Checks if we have a winning constellation for the opponent stone.
-    /// This method is intended to be used for the AI, because after going into the recursion
-    /// after means that the other player has possibly finished the game.
-    #[inline(always)]
-    pub fn check_winning_opponent(&self) -> bool {
-        check_for_winning(self.opponent_stones)
-    }
 
     /// Checks if we have a draw situation under the assumption that we do not have a winning
     /// one.
