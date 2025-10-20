@@ -11,9 +11,6 @@ use std::collections::HashMap;
 /// The maximum value we use for evaluation.
 const MAXIMUM_SCORE: i8 = 100;
 
-/// The window for deciding whether to discount or not.
-const SCORE_WINDOW : i8 = 10;
-
 /// A guard for a score than can not be exceeded.
 const SCORE_GUARD : i8 = MAXIMUM_SCORE + 2;
 
@@ -33,7 +30,7 @@ pub struct PresortResult {
     /// The move that belongs to the best score.
     pub best_move : usize,
     /// The list with the remainder we still have to process. Contains the coded board,
-    /// the move index and the evaluation. The position is to avoid recalculating the has structs. 
+    /// the move index and the evaluation. The position is to avoid recalculating the has structs.
     pub working_list : Vec<(u64, usize, u32)>
 }
 
@@ -47,7 +44,7 @@ impl AlphaBeta {
         }
     }
 
-   
+
 
 
     /// Generates a vector of (coded Move, chosen slot, heuristic evaluation) and returns it
@@ -56,15 +53,23 @@ impl AlphaBeta {
     fn get_pre_sorted_move_list(&mut self) -> PresortResult {
         let mut local_max = - SCORE_GUARD;
         let mut local_move = DUMMY_MOVE;
-
         let mut test_board = self.bit_board.clone();
         let mut local_sorter = Vec::<(u64, usize, u32)>::new();
+
+
         for (coded, slot) in self.bit_board.get_all_possible_moves() {
             test_board.own_stones |= coded;
 
             if check_for_winning(test_board.own_stones) {
                 local_max = MAXIMUM_SCORE;
                 local_move = slot;
+                test_board.own_stones ^= coded;
+                // Reached optimum
+                return PresortResult {
+                    working_list: Vec::new(),  // No further moves.
+                    max_score: local_max,
+                    best_move: local_move
+                };
             } else if (test_board.own_stones | test_board.opponent_stones) == FULL_BOARD_MASK {
                 if local_max < 0
                 {
@@ -78,7 +83,8 @@ impl AlphaBeta {
                 test_board.swap_players();
 
                 if let Some(found_value) = self.hash_map.get(&search_key) {
-                    if (-*found_value) > local_max {
+                    let score = -*found_value;
+                    if (score) > local_max {
                         local_max = -*found_value;
                         local_move = slot;
                     }
@@ -86,7 +92,7 @@ impl AlphaBeta {
 
                     // Only in this case we analyze.
                     let mut val: u32;
-                    val = check_for_free_three(test_board.opponent_stones) * 100;
+                    val = check_for_free_three(test_board.own_stones) * 100;
                     val += match slot {
                         0 | 6 => 3,
                         1 | 5 => 4,
@@ -112,10 +118,10 @@ impl AlphaBeta {
 
 
     /// Evaluate the next move and returns the applied move and the value.
-    fn evaluate_next_move(&mut self, alpha : i8, beta : i8) -> (usize, i8) {
+    fn evaluate_next_move(&mut self, alpha : i8, beta : i8, depth: i8) -> (usize, i8) {
 
         // First we check if the opponent has scored a win.
-        if check_for_winning(self.bit_board.opponent_stones) {return (DUMMY_MOVE, -MAXIMUM_SCORE)};
+        if check_for_winning(self.bit_board.opponent_stones) {return (DUMMY_MOVE, -MAXIMUM_SCORE + depth)};
         // Then we check for draw
         if (self.bit_board.own_stones | self.bit_board.opponent_stones) == FULL_BOARD_MASK {return (DUMMY_MOVE, 0)};
 
@@ -138,22 +144,25 @@ impl AlphaBeta {
             best_value = todo_list.max_score;
         }
 
-        if best_value > alpha {alpha = best_value;}
+        if best_value > alpha {
+            alpha = best_value;
+            if best_value >= beta {
+                self.hash_map.insert(search_key, best_value);
+                return (best_slot, best_value);
+            }
+        }
 
         // We start searching now.
         for (coded_move, slot, _) in todo_list.working_list.iter() {
             // Apply move.
             self.bit_board.own_stones |= coded_move;
             self.bit_board.swap_players();
-            let (_, new_result) = self.evaluate_next_move(-beta, -alpha);
+            let (_, new_result) = self.evaluate_next_move(-beta, -alpha, depth + 1);
             self.bit_board.swap_players();
             self.bit_board.own_stones ^= coded_move;
 
-            let mut adjusted_result = - new_result;
-            // Process discount
-            if adjusted_result > SCORE_WINDOW { adjusted_result -= 1;  }
-            if adjusted_result < -SCORE_WINDOW { adjusted_result += 1;  }
-
+            let  adjusted_result = - new_result;
+            
             if adjusted_result > best_value {
                 best_value = adjusted_result;
                 best_slot = *slot;
@@ -173,7 +182,7 @@ impl AlphaBeta {
     /// Gets the best move for the AI, sets the bit board and does all the computations.
     pub fn get_best_move(&mut self, bit_board: BitBoard) -> usize {
         self.bit_board = bit_board;
-        let (mov, _) = self.evaluate_next_move(-MAXIMUM_SCORE, MAXIMUM_SCORE);
+        let (mov, _) = self.evaluate_next_move(-MAXIMUM_SCORE, MAXIMUM_SCORE, 0);
         self.hash_map.clear();
         mov
     }
