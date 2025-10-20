@@ -15,7 +15,7 @@ pub struct StoneAnimator {
 }
 
 /// The velocity the stone falls down with.
-const FALLING_VELOCITY: f32 = 2.0 / 0.5;
+const FALLING_VELOCITY: f32 = 1.75 ;
 
 impl StoneAnimator {
     pub fn new() -> StoneAnimator {

@@ -27,7 +27,8 @@ impl GameState for ComputerMoveExecutionState {
             .start_animating(&black_board.game_board, self.slot_picked, true);
     }
 
-    /// We wait for the end of the animation, See if game is over and transfer to the next states accordingly.
+    /// We wait for the end of the animation, See if game is over and transfer to the next states accordingly,
+    /// if the game has handed or the player can make his choice.
     fn update(&mut self, delta_time: f32, black_board: &mut Blackboard) -> Option<GameStateIndex> {
         if self.animator.is_animating() {
             self.animator.update(delta_time);

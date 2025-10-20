@@ -1,9 +1,6 @@
 //! This module contains the game board represented as a bit board.
 
-use crate::board_logic::bit_board_coding::{
-    BOARD_HEIGHT, BOARD_WIDTH, FULL_BOARD_MASK, check_for_winning, get_bit_representation,
-    get_winning_board,
-};
+use crate::board_logic::bit_board_coding::{BOARD_HEIGHT, BOARD_WIDTH, FULL_BOARD_MASK, check_for_winning, get_bit_representation, get_winning_board, get_all_possible_moves};
 use crate::board_logic::bit_board_coding::{flip_board, get_position_iterator, get_possible_move};
 use crate::debug_check_board_coordinates;
 use std::hash::Hash;
@@ -130,6 +127,7 @@ impl BitBoard {
     }
 
     /// Simplifies making a move on a column on the outside. It has to be guarantied that move is possible.
+    /// This function is meant for UI only and not the AI.
     pub fn apply_move_on_column(&mut self, column: usize, is_computer: bool) {
         let coded_move = self.get_possible_move(column);
         debug_assert!(coded_move != 0, "The indicated move is not possible.");
@@ -158,11 +156,13 @@ impl BitBoard {
     }
 
     /// The apply move as intended to be used in the ai, as this will always refer to the own stone.
+    #[inline(always)]
     fn apply_move_own_stone(&mut self, coded_move: u64) {
         self.own_stones |= coded_move;
     }
 
     /// Revokes the move as used in the ai.
+    #[inline(always)]
     fn revoke_move_own_stone(&mut self, coded_move: u64) {
         self.own_stones ^= coded_move;
     }
@@ -170,15 +170,24 @@ impl BitBoard {
     /// Checks if we have a winning constellation for the opponent stone.
     /// This method is intended to be used for the AI, because after going into the recursion
     /// after means that the other player has possibly finished the game.
+    #[inline(always)]
     pub fn check_winning_opponent(&self) -> bool {
         check_for_winning(self.opponent_stones)
     }
 
     /// Checks if we have a draw situation under the assumption that we do not have a winning
     /// one.
+    #[inline(always)]
     pub fn check_for_draw_if_not_winning(&self) -> bool {
         let compound = self.opponent_stones | self.own_stones;
         compound == FULL_BOARD_MASK
+    }
+
+
+    /// Gets an iterator of all possible moves. This method is meant for the ai.
+    #[inline(always)]
+    pub fn get_all_possible_moves(&self) -> impl Iterator<Item = u64> {
+        get_all_possible_moves(self.opponent_stones | self.own_stones)
     }
 
     /// Easy game over method to be used for the game state system to determine the follow-up states.

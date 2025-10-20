@@ -127,6 +127,7 @@ pub fn get_possible_move(board: u64, column: usize) -> u64 {
 /// Checks if the game board contains a winning constellation.
 /// Here the bit board representation really shines. Returns true
 /// if the board has one sequence of rows.
+#[inline(always)]
 pub fn check_for_winning(board: u64) -> bool {
     for bit_shift in DIR_INCREMENT {
         let d = clip_shift(board, bit_shift) & board;
@@ -155,11 +156,14 @@ pub fn get_winning_board(board: u64) -> u64 {
             result |= flag;
         }
     }
+    
+    // result.count_ones();
 
     result
 }
 
 /// Gets an iterator for all possible moves for the ai.
+#[inline(always)]
 pub fn get_all_possible_moves(board: u64) -> impl Iterator<Item = u64> {
     let comb = (clip_shift(board, DIR_INCREMENT[1]) | BOTTOM_FILL_MASK) ^ board;
     (0..BOARD_WIDTH)
@@ -167,3 +171,4 @@ pub fn get_all_possible_moves(board: u64) -> impl Iterator<Item = u64> {
         .map(move |x| comb & COLUMN_MASK[x])
         .filter(|&x| x != 0)
 }
+

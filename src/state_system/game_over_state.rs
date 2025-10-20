@@ -43,6 +43,8 @@ impl GameOverState {
 }
 
 impl GameState for GameOverState {
+    
+    /// On enter er extract the information of why the game is over and eventually highlighted stones.
     fn enter(&mut self, black_board: &Blackboard) {
         let (state, list) = black_board.game_board.get_winning_status_for_rendering();
         assert_ne!(
@@ -55,7 +57,7 @@ impl GameState for GameOverState {
         self.exit_pressed = false;
     }
 
-    /// When the exit button got pressed we leave and clear the board.
+    /// When the exit got triggered we leave and clear the board.
     fn update(&mut self, _: f32, black_board: &mut Blackboard) -> Option<GameStateIndex> {
         if self.exit_pressed {
             black_board.game_board.reset();
@@ -65,16 +67,14 @@ impl GameState for GameOverState {
         }
     }
 
-    /// Checks if the exit button got pressed.
-    fn mouse_click(&mut self, position: [f32; 2]) {
-        let diff_x = (position[0] - CENTRAL_POSITION[0]).abs();
-        let diff_y = (position[1] - CENTRAL_POSITION[1]).abs();
-
-        self.exit_pressed =
-            (diff_x < GraphicsPainter::CIRCLE_RADIUS) && (diff_y < GraphicsPainter::CIRCLE_RADIUS);
+    /// Checks if mouse button got pressed and flags that we want to leave.
+    fn mouse_click(&mut self, _: [f32; 2]) {
+  
+        self.exit_pressed = true;
     }
 
-    /// Renders the board, eventually highlighted winning stones and the exit button.
+    /// Renders the board, eventually highlighted winning stones and the game end
+    /// status icon.
     fn draw(&self, graphics: &GraphicsPainter, black_board: &Blackboard) {
         graphics.render_board(&black_board.game_board);
 

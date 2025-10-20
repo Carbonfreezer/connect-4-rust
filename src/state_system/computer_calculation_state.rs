@@ -1,6 +1,8 @@
 //! In this state the real computation happens, and also the player animation is executed to
-//! cover up some calculation time. The calculation happens asynchronously in a Tokio thread.
+//! cover up some calculation time. The calculation happens asynchronously in a separate 
+//! working thread.
 
+use crate::board_logic::bit_board_coding::BOARD_WIDTH;
 use crate::board_logic::bit_board::BitBoard;
 use crate::board_logic::move_ai::MoveAI;
 use crate::render_system::graphics::GraphicsPainter;
@@ -8,6 +10,7 @@ use crate::render_system::stone_animator::StoneAnimator;
 use crate::state_system::game_state::{Blackboard, GameState, GameStateIndex};
 use std::sync::mpsc;
 use std::thread;
+use crate::debug_check_board_coordinates;
 
 pub struct ComputerCalculationState {
     animator: StoneAnimator,
@@ -22,10 +25,10 @@ impl ComputerCalculationState {
 
         // Kick of a worker thread, that runs in the background.
         thread::spawn(move || {
+            let mut ai = MoveAI::new();
             loop {
                 let local_board = task_receiver.recv().unwrap();
-                let mut ai = MoveAI::new(local_board);
-                let result = ai.get_best_move();
+                let result = ai.get_best_move(local_board);
                 result_sender
                     .send(result)
                     .unwrap();
@@ -41,6 +44,9 @@ impl ComputerCalculationState {
 }
 
 impl GameState for ComputerCalculationState {
+    
+    /// Here we start the animation of the stone and feed the new situation to the worker
+    /// thread to perform the computations.
     fn enter(&mut self, black_board: &Blackboard) {
         let mut local_board = black_board.game_board.clone();
         // Pre make the player move.
@@ -55,6 +61,8 @@ impl GameState for ComputerCalculationState {
             .start_animating(&black_board.game_board, black_board.player_choice, false);
     }
 
+    /// In the update we perform the animation and once it is finished we check with the worker
+    /// thread, if the results are present and if so leave the thread for execution.
     fn update(&mut self, delta_time: f32, black_board: &mut Blackboard) -> Option<GameStateIndex> {
         if self.animator.is_animating() {
             self.animator.update(delta_time);
@@ -67,6 +75,7 @@ impl GameState for ComputerCalculationState {
         }
 
         if let Ok(result) = self.receiver.try_recv() {
+            debug_check_board_coordinates!(col: result);
             black_board.computer_choice = result;
             return Some(GameStateIndex::ComputerExecutionState);
         }
@@ -74,10 +83,13 @@ impl GameState for ComputerCalculationState {
         None
     }
 
+    
+    /// We do not process mouse clicks here.
     fn mouse_click(&mut self, _: [f32; 2]) {
         // Nothing to do here.
     }
 
+    /// Draws the board and eventually the falling stone.
     fn draw(&self, graphics: &GraphicsPainter, black_board: &Blackboard) {
         if self.animator.is_animating() {
             self.animator.draw(graphics);

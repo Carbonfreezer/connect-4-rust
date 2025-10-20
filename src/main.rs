@@ -23,9 +23,7 @@ fn main() {
 
     let window = window_config.build_window();
 
-    // after the window is created, we can call OpenGL functions, not before
     unsafe {
-        gl::Enable(gl::DEBUG_OUTPUT);
         gl::Enable(gl::STENCIL_TEST);
     }
 

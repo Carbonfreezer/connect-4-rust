@@ -27,7 +27,7 @@ const RIGHT_CENTER: [f32; 2] = [0.5, 0.0];
 /// The radius of the button.
 const RADIUS: f32 = 0.3;
 /// The highlight time for the button.
-const HIGHLIGHT_TIME: f32 = 0.3;
+const HIGHLIGHT_TIME: f32 = 0.25;
 
 /// Computes the euclidean distance between points.
 fn get_distance_between(first_point: [f32; 2], second_point: [f32; 2]) -> f32 {
