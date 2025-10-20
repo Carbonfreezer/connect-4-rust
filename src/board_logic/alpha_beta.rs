@@ -21,9 +21,6 @@ const DUMMY_MOVE : usize = 100;
 pub struct AlphaBeta {
     bit_board: BitBoard,
     hash_map: HashMap<SymmetryIndependentPosition, i8>,
-
-    // Debug
-    nodes_visited: u32
 }
 
 /// A result wer get for the presorting.
@@ -44,8 +41,6 @@ impl AlphaBeta {
         AlphaBeta {
             bit_board: BitBoard::new(),
             hash_map: HashMap::new(),
-
-            nodes_visited: 0
         }
     }
 
@@ -74,13 +69,8 @@ impl AlphaBeta {
                     local_max = 0;
                     local_move = slot;
                 }
-            } else if check_for_winning(test_board.opponent_stones | coded) {
-                // Blocking move
-                if local_max < MAXIMUM_SCORE - 1 {
-                    local_max = MAXIMUM_SCORE - 1;  // Knapp unter Gewinn
-                    local_move = slot;
-                }
-            } else {
+            } 
+            else {
                 // As done in evaluate.
                 test_board.swap_players();
                 let search_key = test_board.get_symmetry_independent_position();
@@ -89,7 +79,7 @@ impl AlphaBeta {
 
                 if let Some(found_value) = self.hash_map.get(&search_key) {
                     let score = -*found_value;
-                    if (score) > local_max {
+                    if  score > local_max {
                         local_max = -*found_value;
                         local_move = slot;
                     }
@@ -181,9 +171,7 @@ impl AlphaBeta {
 
         // Insert value into hashmap.
         self.hash_map.insert(search_key, best_value);
-
-        if depth == 10 {println!("Layer 10 finished  nodes:{} hash: {}", self.nodes_visited, self.hash_map.len());}
-
+        
         (best_slot, best_value)
     }
 
