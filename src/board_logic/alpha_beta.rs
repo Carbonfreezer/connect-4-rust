@@ -50,11 +50,14 @@ impl AlphaBeta {
                 val = 0;
             }
             else {
+                // Zug anwenden und swappen wie in evaluate_next_move
+                test_board.swap_players();
                 let search_key = test_board.get_symmetry_independent_position();
-                
+
                 if let Some(found_value) = self.hash_map.get(&search_key) {
-                    val = ((*found_value) as i32 + 200) as u32;
+                    val = (-*found_value as i32 + 200) as u32;  // Negieren weil Gegnerperspektive
                 } else {
+                    // Nach swap ist opponent_stones das, was vorher own_stones war
                     val = check_for_free_three(test_board.opponent_stones) * 100;
                     val += match slot {
                         0 | 6 => 3,
@@ -64,6 +67,8 @@ impl AlphaBeta {
                         _ => panic!("Invalid slot {}!", slot)
                     };
                 }
+
+                test_board.swap_players();  // Zurück swappen
             }
 
 
@@ -128,7 +133,7 @@ impl AlphaBeta {
     /// Gets the best move for the AI, sets the bit board and does all the computations.
     pub fn get_best_move(&mut self, bit_board: BitBoard) -> usize {
         self.bit_board = bit_board;
-        let (mov, _) = self.evaluate_next_move(i8::MIN, i8::MAX, 0);
+        let (mov, _) = self.evaluate_next_move(-(MAXIMUM_SCORE + 1), MAXIMUM_SCORE + 1, 0);
         self.hash_map.clear();
         mov
     }
