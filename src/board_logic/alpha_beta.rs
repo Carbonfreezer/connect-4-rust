@@ -21,6 +21,9 @@ const DUMMY_MOVE : usize = 100;
 pub struct AlphaBeta {
     bit_board: BitBoard,
     hash_map: HashMap<SymmetryIndependentPosition, i8>,
+
+    // Debug
+    nodes_visited: u32
 }
 
 /// A result wer get for the presorting.
@@ -41,6 +44,8 @@ impl AlphaBeta {
         AlphaBeta {
             bit_board: BitBoard::new(),
             hash_map: HashMap::new(),
+
+            nodes_visited: 0
         }
     }
 
@@ -76,17 +81,33 @@ impl AlphaBeta {
                     local_max = 0;
                     local_move = slot;
                 }
+            } else if check_for_winning(test_board.opponent_stones | coded) {
+                // Blocking move
+                if local_max < MAXIMUM_SCORE - 1 {
+                    local_max = MAXIMUM_SCORE - 1;  // Knapp unter Gewinn
+                    local_move = slot;
+                }
             } else {
                 // As done in evaluate.
                 test_board.swap_players();
                 let search_key = test_board.get_symmetry_independent_position();
                 test_board.swap_players();
 
+
                 if let Some(found_value) = self.hash_map.get(&search_key) {
                     let score = -*found_value;
                     if (score) > local_max {
                         local_max = -*found_value;
                         local_move = slot;
+                    }
+                    // Early exit bei perfektem Score
+                    if score >= MAXIMUM_SCORE {
+                        test_board.own_stones ^= coded;
+                        return PresortResult {
+                            working_list: Vec::new(),
+                            max_score: local_max,
+                            best_move: local_move
+                        };
                     }
                 } else {
 
@@ -119,7 +140,9 @@ impl AlphaBeta {
 
     /// Evaluate the next move and returns the applied move and the value.
     fn evaluate_next_move(&mut self, alpha : i8, beta : i8, depth: i8) -> (usize, i8) {
-
+        
+        self.nodes_visited += 1;
+        
         // First we check if the opponent has scored a win.
         if check_for_winning(self.bit_board.opponent_stones) {return (DUMMY_MOVE, -MAXIMUM_SCORE + depth)};
         // Then we check for draw
@@ -162,7 +185,7 @@ impl AlphaBeta {
             self.bit_board.own_stones ^= coded_move;
 
             let  adjusted_result = - new_result;
-            
+
             if adjusted_result > best_value {
                 best_value = adjusted_result;
                 best_slot = *slot;
@@ -175,6 +198,8 @@ impl AlphaBeta {
 
         // Insert value into hashmap.
         self.hash_map.insert(search_key, best_value);
+
+        if depth == 10 {println!("Layer 10 finished  nodes:{} hash: {}", self.nodes_visited, self.hash_map.len());}
 
         (best_slot, best_value)
     }
