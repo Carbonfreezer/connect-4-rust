@@ -4,15 +4,15 @@
 use crate::game_state::{Blackboard, GameState, GameStateIndex};
 use crate::render_system::graphics::{Color, GraphicsPainter};
 
-pub struct PlayerStartSelection {
+pub struct StatePlayerStartSelection {
     position_selected: u8,
     time_passed_after_selection: f32,
     selection_happened: bool,
 }
 
-impl PlayerStartSelection {
-    pub fn new() -> PlayerStartSelection {
-        PlayerStartSelection {
+impl StatePlayerStartSelection {
+    pub fn new() -> StatePlayerStartSelection {
+        StatePlayerStartSelection {
             position_selected: 0,
             time_passed_after_selection: 0.0,
             selection_happened: false,
@@ -36,7 +36,7 @@ fn get_distance_between(first_point: [f32; 2], second_point: [f32; 2]) -> f32 {
 
     (x * x + y * y).sqrt()
 }
-impl GameState for PlayerStartSelection {
+impl GameState for StatePlayerStartSelection {
     fn enter(&mut self, _: &Blackboard) {
         self.selection_happened = false;
         self.time_passed_after_selection = 0.0;

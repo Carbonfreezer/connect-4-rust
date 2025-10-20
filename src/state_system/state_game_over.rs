@@ -5,7 +5,7 @@ use crate::board_logic::bit_board::GameResult;
 use crate::render_system::graphics::{Color, GraphicsPainter};
 use crate::state_system::game_state::{Blackboard, GameState, GameStateIndex};
 
-pub struct GameOverState {
+pub struct StateGameOver {
     end_result: GameResult,
     highlighted_stones: Vec<(usize, usize)>,
     exit_pressed: bool,
@@ -32,9 +32,9 @@ const UPPER_POSITION_INNER: [f32; 2] = [
     CENTRAL_POSITION[1] + GraphicsPainter::CIRCLE_RADIUS * 0.8,
 ];
 
-impl GameOverState {
-    pub fn new() -> GameOverState {
-        GameOverState {
+impl StateGameOver {
+    pub fn new() -> StateGameOver {
+        StateGameOver {
             end_result: GameResult::Pending,
             highlighted_stones: Vec::new(),
             exit_pressed: false,
@@ -42,7 +42,7 @@ impl GameOverState {
     }
 }
 
-impl GameState for GameOverState {
+impl GameState for StateGameOver {
     
     /// On enter er extract the information of why the game is over and eventually highlighted stones.
     fn enter(&mut self, black_board: &Blackboard) {

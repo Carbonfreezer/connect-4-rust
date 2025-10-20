@@ -6,15 +6,15 @@ use crate::render_system::graphics::GraphicsPainter;
 use crate::render_system::stone_animator::StoneAnimator;
 use crate::state_system::game_state::{Blackboard, GameState, GameStateIndex};
 
-pub struct PlayerInputState {
+pub struct StatePlayerInput {
     slot_picked: Option<usize>,
     animator: StoneAnimator,
     transition_to_game_over: bool,
 }
 
-impl PlayerInputState {
-    pub fn new() -> PlayerInputState {
-        PlayerInputState {
+impl StatePlayerInput {
+    pub fn new() -> StatePlayerInput {
+        StatePlayerInput {
             slot_picked: None,
             animator: StoneAnimator::new(),
             transition_to_game_over: false,
@@ -22,7 +22,7 @@ impl PlayerInputState {
     }
 }
 
-impl GameState for PlayerInputState {
+impl GameState for StatePlayerInput {
     fn enter(&mut self, _: &Blackboard) {
         self.slot_picked = None;
         self.transition_to_game_over = false;

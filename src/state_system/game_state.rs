@@ -2,12 +2,12 @@
 //! over which states can exchange information.
 
 use crate::board_logic::bit_board::BitBoard;
-use crate::state_computer_move_execution::ComputerMoveExecutionState;
-use crate::state_game_over::GameOverState;
-use crate::state_player_start_selection::PlayerStartSelection;
+use crate::state_computer_move_execution::StateComputerMoveExecution;
+use crate::state_game_over::StateGameOver;
+use crate::state_player_start_selection::StatePlayerStartSelection;
 use crate::render_system::graphics::GraphicsPainter;
-use crate::state_system::state_computer_calculation::ComputerCalculationState;
-use crate::state_system::state_player_input::PlayerInputState;
+use crate::state_system::state_computer_calculation::StateComputerCalculation;
+use crate::state_system::state_player_input::StatePlayerInput;
 
 /// All implemented game states get an index, with which they can refer to each other.
 pub enum GameStateIndex {
@@ -21,11 +21,11 @@ pub enum GameStateIndex {
 /// Generates a vector with all the required game states.
 pub fn generate_state_collection() -> Vec<Box<dyn GameState>> {
     let result: Vec<Box<dyn GameState>> = vec![
-        Box::new(PlayerStartSelection::new()),
-        Box::new(ComputerMoveExecutionState::new()),
-        Box::new(PlayerInputState::new()),
-        Box::new(ComputerCalculationState::new()),
-        Box::new(GameOverState::new()),
+        Box::new(StatePlayerStartSelection::new()),
+        Box::new(StateComputerMoveExecution::new()),
+        Box::new(StatePlayerInput::new()),
+        Box::new(StateComputerCalculation::new()),
+        Box::new(StateGameOver::new()),
     ];
     result
 }

@@ -12,14 +12,14 @@ use std::sync::mpsc;
 use std::thread;
 use crate::debug_check_board_coordinates;
 
-pub struct ComputerCalculationState {
+pub struct StateComputerCalculation {
     animator: StoneAnimator,
     receiver: mpsc::Receiver<usize>,
     sender: mpsc::Sender<BitBoard>,
 }
 
-impl ComputerCalculationState {
-    pub fn new() -> ComputerCalculationState {
+impl StateComputerCalculation {
+    pub fn new() -> StateComputerCalculation {
         let (result_sender, result_receiver) = mpsc::channel::<usize>();
         let (task_sender, task_receiver) = mpsc::channel::<BitBoard>();
 
@@ -35,7 +35,7 @@ impl ComputerCalculationState {
             }
         });
 
-        ComputerCalculationState {
+        StateComputerCalculation {
             animator: StoneAnimator::new(),
             receiver: result_receiver,
             sender: task_sender,
@@ -43,7 +43,7 @@ impl ComputerCalculationState {
     }
 }
 
-impl GameState for ComputerCalculationState {
+impl GameState for StateComputerCalculation {
     
     /// Here we start the animation of the stone and feed the new situation to the worker
     /// thread to perform the computations.
