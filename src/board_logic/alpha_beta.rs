@@ -69,7 +69,7 @@ impl AlphaBeta {
                     local_max = 0;
                     local_move = slot;
                 }
-            } 
+            }
             else {
                 // As done in evaluate.
                 test_board.swap_players();
@@ -114,8 +114,6 @@ impl AlphaBeta {
 
     /// Evaluate the next move and returns the applied move and the value.
     fn evaluate_next_move(&mut self, alpha : i8, beta : i8, depth: i8) -> (usize, i8) {
-        
-        self.nodes_visited += 1;
         
         // First we check if the opponent has scored a win.
         if check_for_winning(self.bit_board.opponent_stones) {return (DUMMY_MOVE, -MAXIMUM_SCORE + depth)};
@@ -171,7 +169,7 @@ impl AlphaBeta {
 
         // Insert value into hashmap.
         self.hash_map.insert(search_key, best_value);
-        
+
         (best_slot, best_value)
     }
 
