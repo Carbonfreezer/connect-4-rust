@@ -10,15 +10,15 @@ use crate::board_logic::bit_board::{BitBoard, SymmetryIndependentPosition};
 use crate::board_logic::bit_board_coding::BOARD_WIDTH;
 
 /// Contains a bit-board and a hashmap.
-pub struct MoveAI {
+pub struct AlphaBeta {
     bit_board: BitBoard,
     hash_map : HashMap<SymmetryIndependentPosition, i8>
 }
 
-impl MoveAI {
+impl AlphaBeta {
     /// The bit board is handed over intentionally with a move situations.
-    pub fn new() -> MoveAI {
-        MoveAI {
+    pub fn new() -> AlphaBeta {
+        AlphaBeta {
             bit_board : BitBoard::new(),
             hash_map: HashMap::new()
         }

@@ -4,7 +4,7 @@
 
 use crate::board_logic::bit_board_coding::BOARD_WIDTH;
 use crate::board_logic::bit_board::BitBoard;
-use crate::board_logic::move_ai::MoveAI;
+use crate::board_logic::alpha_beta::AlphaBeta;
 use crate::render_system::graphics::GraphicsPainter;
 use crate::render_system::stone_animator::StoneAnimator;
 use crate::state_system::game_state::{Blackboard, GameState, GameStateIndex};
@@ -25,7 +25,7 @@ impl StateComputerCalculation {
 
         // Kick of a worker thread, that runs in the background.
         thread::spawn(move || {
-            let mut ai = MoveAI::new();
+            let mut ai = AlphaBeta::new();
             loop {
                 let local_board = task_receiver.recv().unwrap();
                 let result = ai.get_best_move(local_board);
