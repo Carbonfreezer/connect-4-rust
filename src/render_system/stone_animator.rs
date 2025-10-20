@@ -15,7 +15,7 @@ pub struct StoneAnimator {
 }
 
 /// The velocity the stone falls down with.
-const FALLING_VELOCITY: f32 = 1.75 ;
+const FALLING_VELOCITY: f32 = 1.75;
 
 impl StoneAnimator {
     pub fn new() -> StoneAnimator {
@@ -60,7 +60,7 @@ impl StoneAnimator {
         self.is_animating = self.remaining_way_length >= -delta_way;
         self.current_position[1] += delta_way;
     }
-    
+
     /// Checks if we are still animating.
     pub fn is_animating(&self) -> bool {
         self.is_animating

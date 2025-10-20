@@ -2,10 +2,10 @@
 //! over which states can exchange information.
 
 use crate::board_logic::bit_board::BitBoard;
+use crate::render_system::graphics::GraphicsPainter;
 use crate::state_computer_move_execution::StateComputerMoveExecution;
 use crate::state_game_over::StateGameOver;
 use crate::state_player_start_selection::StatePlayerStartSelection;
-use crate::render_system::graphics::GraphicsPainter;
 use crate::state_system::state_computer_calculation::StateComputerCalculation;
 use crate::state_system::state_player_input::StatePlayerInput;
 

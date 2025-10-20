@@ -156,7 +156,7 @@ pub fn get_winning_board(board: u64) -> u64 {
             result |= flag;
         }
     }
-    
+
     // result.count_ones();
 
     result
@@ -172,4 +172,3 @@ pub fn get_all_possible_moves(board: u64) -> impl Iterator<Item = (u64, usize)> 
         .map(move |x| (comb & COLUMN_MASK[x], x))
         .filter(|&x| x.0 != 0)
 }
-

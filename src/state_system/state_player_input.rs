@@ -37,13 +37,12 @@ impl GameState for StatePlayerInput {
             if !self.animator.is_animating() {
                 black_board
                     .game_board
-                    .apply_move_on_column( black_board.player_choice, false);
+                    .apply_move_on_column(black_board.player_choice, false);
                 return Some(GameStateIndex::GameOverState);
             }
         }
 
         if let Some(slot_choice) = self.slot_picked {
-            
             // We have chosen a slot.
             self.slot_picked = None;
 

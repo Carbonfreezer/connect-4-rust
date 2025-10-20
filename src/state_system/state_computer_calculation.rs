@@ -1,16 +1,16 @@
 //! In this state the real computation happens, and also the player animation is executed to
-//! cover up some calculation time. The calculation happens asynchronously in a separate 
+//! cover up some calculation time. The calculation happens asynchronously in a separate
 //! working thread.
 
-use crate::board_logic::bit_board_coding::BOARD_WIDTH;
-use crate::board_logic::bit_board::BitBoard;
 use crate::board_logic::alpha_beta::AlphaBeta;
+use crate::board_logic::bit_board::BitBoard;
+use crate::board_logic::bit_board_coding::BOARD_WIDTH;
+use crate::debug_check_board_coordinates;
 use crate::render_system::graphics::GraphicsPainter;
 use crate::render_system::stone_animator::StoneAnimator;
 use crate::state_system::game_state::{Blackboard, GameState, GameStateIndex};
 use std::sync::mpsc;
 use std::thread;
-use crate::debug_check_board_coordinates;
 
 pub struct StateComputerCalculation {
     animator: StoneAnimator,
@@ -29,9 +29,7 @@ impl StateComputerCalculation {
             loop {
                 let local_board = task_receiver.recv().unwrap();
                 let result = ai.get_best_move(local_board);
-                result_sender
-                    .send(result)
-                    .unwrap();
+                result_sender.send(result).unwrap();
             }
         });
 
@@ -44,7 +42,6 @@ impl StateComputerCalculation {
 }
 
 impl GameState for StateComputerCalculation {
-    
     /// Here we start the animation of the stone and feed the new situation to the worker
     /// thread to perform the computations.
     fn enter(&mut self, black_board: &Blackboard) {
@@ -52,9 +49,7 @@ impl GameState for StateComputerCalculation {
         // Pre make the player move.
         local_board.apply_move_on_column(black_board.player_choice, false);
 
-        self.sender
-            .send(local_board)
-            .unwrap();
+        self.sender.send(local_board).unwrap();
 
         // Start the animation.
         self.animator
@@ -83,7 +78,6 @@ impl GameState for StateComputerCalculation {
         None
     }
 
-    
     /// We do not process mouse clicks here.
     fn mouse_click(&mut self, _: [f32; 2]) {
         // Nothing to do here.

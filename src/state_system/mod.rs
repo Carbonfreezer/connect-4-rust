@@ -19,9 +19,9 @@
 //! * 3->5: When the player input would result in ending the game, the animation is still played and then the transfer happens.
 //! * 5->1: When the player has acknowledged the result, we go to selection again.
 
+pub mod game_state;
+pub mod state_computer_calculation;
 pub mod state_computer_move_execution;
 pub mod state_game_over;
-pub mod game_state;
 pub mod state_player_input;
 pub mod state_player_start_selection;
-pub mod state_computer_calculation;

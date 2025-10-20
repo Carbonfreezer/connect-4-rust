@@ -1,4 +1,4 @@
-//! Program is an adaption of the 4 Connect game. It is an attempt to brute force the game to achieve perfect strategy. 
+//! Program is an adaption of the 4 Connect game. It is an attempt to brute force the game to achieve perfect strategy.
 
 mod state_system;
 

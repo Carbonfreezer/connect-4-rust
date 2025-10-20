@@ -53,14 +53,12 @@ impl GameState for StatePlayerStartSelection {
             black_board
                 .game_board
                 .set_computer_first(self.position_selected == 1);
-            if self.position_selected == 1  {
+            if self.position_selected == 1 {
                 black_board.computer_choice = 3;
                 return Some(GameStateIndex::ComputerExecutionState);
-            }
-            else {
+            } else {
                 return Some(GameStateIndex::PlayerInputState);
             }
-
         }
 
         None

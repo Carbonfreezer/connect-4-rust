@@ -1,6 +1,9 @@
 //! This module contains the game board represented as a bit board.
 
-use crate::board_logic::bit_board_coding::{BOARD_HEIGHT, BOARD_WIDTH, FULL_BOARD_MASK, check_for_winning, get_bit_representation, get_winning_board, get_all_possible_moves};
+use crate::board_logic::bit_board_coding::{
+    BOARD_HEIGHT, BOARD_WIDTH, FULL_BOARD_MASK, check_for_winning, get_all_possible_moves,
+    get_bit_representation, get_winning_board,
+};
 use crate::board_logic::bit_board_coding::{flip_board, get_position_iterator, get_possible_move};
 use crate::debug_check_board_coordinates;
 use std::hash::Hash;
@@ -182,7 +185,6 @@ impl BitBoard {
         let compound = self.opponent_stones | self.own_stones;
         compound == FULL_BOARD_MASK
     }
-
 
     /// Gets an iterator of all possible moves. This method is meant for the ai.
     /// The iterator returns the move and the original move index.

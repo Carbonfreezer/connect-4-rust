@@ -43,7 +43,6 @@ impl StateGameOver {
 }
 
 impl GameState for StateGameOver {
-    
     /// On enter er extract the information of why the game is over and eventually highlighted stones.
     fn enter(&mut self, black_board: &Blackboard) {
         let (state, list) = black_board.game_board.get_winning_status_for_rendering();
@@ -69,7 +68,6 @@ impl GameState for StateGameOver {
 
     /// Checks if mouse button got pressed and flags that we want to leave.
     fn mouse_click(&mut self, _: [f32; 2]) {
-  
         self.exit_pressed = true;
     }
 
