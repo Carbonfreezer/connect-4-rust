@@ -56,7 +56,7 @@ impl GameState for StatePlayerInput {
             black_board.game_board.apply_move(coded_move, false);
             let game_over = black_board.game_board.is_game_over();
             black_board.game_board.revoke_move(coded_move, false);
-            // When it is not game over we can directly go to the computer execution.
+            // When it is not game over we can directly go to the computer calculation.
             if !game_over {
                 return Some(GameStateIndex::ComputerCalculationState);
             }

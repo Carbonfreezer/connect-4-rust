@@ -127,6 +127,16 @@ pub fn get_possible_move(board: u64, column: usize) -> u64 {
 /// Checks if the game board contains a winning constellation.
 /// Here the bit board representation really shines. Returns true
 /// if the board has one sequence of rows.
+/// 
+/// The idea is:  
+/// board:  
+/// 001111000  
+/// d:   
+/// 000111000   
+/// dd:  
+/// 000001110  
+/// dd & d  
+/// 000001000 
 #[inline(always)]
 pub fn check_for_winning(board: u64) -> bool {
     for bit_shift in DIR_INCREMENT {
@@ -141,6 +151,9 @@ pub fn check_for_winning(board: u64) -> bool {
 }
 
 /// Generates a board representation, where bits are set that belong to a winning combination.
+/// Makes use of the fact, that *check_for_winning* effectively collapsed a winning combination
+/// into one bit that is the furthest out in shift direction. So we invert the shift three times
+/// and ore it together.
 pub fn get_winning_board(board: u64) -> u64 {
     let mut result = 0;
     for bit_shift in DIR_INCREMENT {
@@ -162,7 +175,7 @@ pub fn get_winning_board(board: u64) -> u64 {
     result
 }
 
-/// Gets an iterator for all possible moves for the ai. The iterator returns the move and the original
+/// Gets an iterator for all possible moves for the AI. The iterator returns the move and the original
 /// move index.
 #[inline(always)]
 pub fn get_all_possible_moves(board: u64) -> impl Iterator<Item = (u64, usize)> {

@@ -54,6 +54,7 @@ impl GameState for StatePlayerStartSelection {
                 .game_board
                 .set_computer_first(self.position_selected == 1);
             if self.position_selected == 1 {
+                // Hard coded first computer move.
                 black_board.computer_choice = 3;
                 return Some(GameStateIndex::ComputerExecutionState);
             } else {
@@ -82,7 +83,7 @@ impl GameState for StatePlayerStartSelection {
         }
     }
 
-    /// Simply renders the two buttons.
+    /// Simply renders the two buttons, eventually highlighted when just selected.
     fn draw(&self, graphics: &GraphicsPainter, _: &Blackboard) {
         if self.selection_happened && (self.position_selected == 0) {
             graphics.draw_circle_normal(RADIUS, LEFT_CENTER, Color::LightYellow);

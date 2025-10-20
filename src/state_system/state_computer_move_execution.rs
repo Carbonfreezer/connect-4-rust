@@ -9,7 +9,7 @@ pub struct StateComputerMoveExecution {
     animator: StoneAnimator,
 }
 
-/// Simply draws the dropping stone and then decides on where to go on.
+/// Simply draws the dropping stone and then decides whether to go for game over or player choice. 
 impl StateComputerMoveExecution {
     pub(crate) fn new() -> StateComputerMoveExecution {
         StateComputerMoveExecution {

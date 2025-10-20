@@ -56,7 +56,7 @@ impl GameState for StateGameOver {
         self.exit_pressed = false;
     }
 
-    /// When the exit got triggered we leave and clear the board.
+    /// When the exit got triggered we leave and clear the board and go for start selection.
     fn update(&mut self, _: f32, black_board: &mut Blackboard) -> Option<GameStateIndex> {
         if self.exit_pressed {
             black_board.game_board.reset();
