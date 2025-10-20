@@ -2,12 +2,12 @@
 //! over which states can exchange information.
 
 use crate::board_logic::bit_board::BitBoard;
-use crate::computer_move_execution_state::ComputerMoveExecutionState;
-use crate::game_over_state::GameOverState;
-use crate::player_start_selection::PlayerStartSelection;
+use crate::state_computer_move_execution::ComputerMoveExecutionState;
+use crate::state_game_over::GameOverState;
+use crate::state_player_start_selection::PlayerStartSelection;
 use crate::render_system::graphics::GraphicsPainter;
-use crate::state_system::computer_calculation_state::ComputerCalculationState;
-use crate::state_system::player_input_state::PlayerInputState;
+use crate::state_system::state_computer_calculation::ComputerCalculationState;
+use crate::state_system::state_player_input::PlayerInputState;
 
 /// All implemented game states get an index, with which they can refer to each other.
 pub enum GameStateIndex {
