@@ -11,7 +11,7 @@ use crate::board_logic::bit_board_coding::{
 use std::collections::HashMap;
 
 /// The search depth we want to apply.
-const SEARCH_DEPTH: u32 = 5;
+const SEARCH_DEPTH: u32 = 12;
 
 /// The dummy move we use as an index.
 const DUMMY_MOVE: u32 = 100;
@@ -21,9 +21,6 @@ const MAX_SCORE: f32 = 1.0;
 
 /// This score is lower than any of the others, we use it as an initialization to check to build the maximum.
 const SCORE_GUARD: f32 = -1.1;
-
-/// The discount factor in terms of reinforcement learning we use to look ahead into the future.
-const DISCOUNT_FACTOR: f32 = 0.99;
 
 /// Contains a bit-board and a hashmap.
 pub struct AlphaBeta {
@@ -200,7 +197,7 @@ impl AlphaBeta {
             self.bit_board.swap_players();
             self.bit_board.own_stones ^= list_entry.coded_move;
 
-            let adjusted_result = -new_result * DISCOUNT_FACTOR;
+            let adjusted_result = -new_result;
             if adjusted_result > best_value {
                 best_value = adjusted_result;
                 best_slot = list_entry.slot;
@@ -224,6 +221,8 @@ impl AlphaBeta {
     /// Gets the best move for the AI, sets the bit board and does all the computations.
     pub fn get_best_move(&mut self, bit_board: BitBoard) -> u32 {
         self.bit_board = bit_board;
+
+
         let (_, mov) = self.evaluate_next_move(-MAX_SCORE, MAX_SCORE, 0, SEARCH_DEPTH);
 
         // Demote hash map.
