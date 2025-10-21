@@ -14,13 +14,13 @@ use std::thread;
 
 pub struct StateComputerCalculation {
     animator: StoneAnimator,
-    receiver: mpsc::Receiver<usize>,
+    receiver: mpsc::Receiver<u32>,
     sender: mpsc::Sender<BitBoard>,
 }
 
 impl StateComputerCalculation {
     pub fn new() -> StateComputerCalculation {
-        let (result_sender, result_receiver) = mpsc::channel::<usize>();
+        let (result_sender, result_receiver) = mpsc::channel::<u32>();
         let (task_sender, task_receiver) = mpsc::channel::<BitBoard>();
 
         // Kick of a worker thread, that runs in the background.

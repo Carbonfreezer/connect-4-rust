@@ -29,7 +29,7 @@ impl StoneAnimator {
 
     /// Starts animating a stone. Needs the board to find out where to go to in height, the column where to animate,
     /// and an indication if this is the computer player to determine the color.
-    pub fn start_animating(&mut self, board: &BitBoard, column: usize, is_computer: bool) {
+    pub fn start_animating(&mut self, board: &BitBoard, column: u32, is_computer: bool) {
         debug_assert_eq!(
             self.is_animating, false,
             "Cannot start animating while animating."

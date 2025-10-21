@@ -7,7 +7,7 @@ use crate::render_system::stone_animator::StoneAnimator;
 use crate::state_system::game_state::{Blackboard, GameState, GameStateIndex};
 
 pub struct StatePlayerInput {
-    slot_picked: Option<usize>,
+    slot_picked: Option<u32>,
     animator: StoneAnimator,
     transition_to_game_over: bool,
 }
@@ -72,7 +72,7 @@ impl GameState for StatePlayerInput {
         if self.slot_picked.is_some() {
             return;
         }
-        let slot = ((position[0] + 1.0) * BOARD_WIDTH as f32 / 2.0) as usize;
+        let slot = ((position[0] + 1.0) * BOARD_WIDTH as f32 / 2.0) as u32;
         self.slot_picked = Some(slot);
     }
 

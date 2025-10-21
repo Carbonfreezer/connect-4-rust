@@ -35,9 +35,9 @@ pub struct Blackboard {
     /// The general board, that show the current game.
     pub game_board: BitBoard,
     /// When the information of a computer choice has to be carried over, it is done here.
-    pub computer_choice: usize,
+    pub computer_choice: u32,
     /// Here comes the choice of the player.
-    pub player_choice: usize,
+    pub player_choice: u32,
 }
 
 impl Blackboard {

@@ -7,7 +7,7 @@ use crate::state_system::game_state::{Blackboard, GameState, GameStateIndex};
 
 pub struct StateGameOver {
     end_result: GameResult,
-    highlighted_stones: Vec<(usize, usize)>,
+    highlighted_stones: Vec<(u32, u32)>,
     exit_pressed: bool,
 }
 

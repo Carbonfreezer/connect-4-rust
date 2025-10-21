@@ -36,8 +36,8 @@ macro_rules! debug_check_draw_coordinates {
 macro_rules! debug_check_board_coordinates {
     ($x:expr, $y:expr) => {
         // Forces usize at compile time.
-        let x: usize = $x;
-        let y: usize = $y;
+        let x: u32 = $x;
+        let y: u32 = $y;
         debug_assert!(
             x < BOARD_WIDTH && y < BOARD_HEIGHT,
             "Illegal coordinates: x={}, y={} (valid: x < {}, y < {})",
@@ -49,7 +49,7 @@ macro_rules! debug_check_board_coordinates {
     };
 
     (col: $x:expr) => {
-        let x: usize = $x;
+        let x: u32 = $x;
         debug_assert!(
             x < BOARD_WIDTH,
             "Illegal column: {} (valid: col < {})",

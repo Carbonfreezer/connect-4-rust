@@ -1,9 +1,6 @@
 //! This module contains the game board represented as a bit board.
 
-use crate::board_logic::bit_board_coding::{
-    BOARD_HEIGHT, BOARD_WIDTH, FULL_BOARD_MASK, check_for_winning, get_all_possible_moves,
-    get_bit_representation, get_winning_board,
-};
+use crate::board_logic::bit_board_coding::{BOARD_HEIGHT, BOARD_WIDTH, FULL_BOARD_MASK, check_for_winning, get_all_possible_moves, get_bit_representation, get_winning_board, DIR_INCREMENT, clip_shift, get_column_mask};
 use crate::board_logic::bit_board_coding::{flip_board, get_position_iterator, get_possible_move};
 use crate::debug_check_board_coordinates;
 use std::hash::Hash;
@@ -28,15 +25,6 @@ pub struct BitBoard {
     computer_first: bool,
 }
 
-
-impl BitBoard {
-    /// Resets the board at the end of the game.
-    pub fn reset(&mut self) {
-        self.own_stones = 0;
-        self.opponent_stones = 0;
-    }
-}
-
 /// This is the symmetry independent coding that can be used for the transposition table.
 #[derive(Hash, PartialEq, Eq, Clone)]
 pub struct SymmetryIndependentPosition {
@@ -51,6 +39,12 @@ impl BitBoard {
             opponent_stones: 0,
             computer_first: false,
         }
+    }
+
+    /// Resets the board at the end of the game.
+    pub fn reset(&mut self) {
+        self.own_stones = 0;
+        self.opponent_stones = 0;
     }
 
     /// Generates a structure that looks the same with its symmetrically identical board.
@@ -92,7 +86,7 @@ impl BitBoard {
 
     /// Returns a list of stones of positions and indications, if they are first player stones.
     /// This method is slow and to be used for rendering the board.
-    pub fn get_board_positioning(&self) -> impl Iterator<Item = (usize, usize, bool)> {
+    pub fn get_board_positioning(&self) -> impl Iterator<Item = (u32, u32, bool)> {
         let first_stones;
         let second_stones;
         if self.computer_first {
@@ -111,7 +105,7 @@ impl BitBoard {
 
     /// Gets in general a possible move for the board, Returns eiter 0 if column is full or returns
     /// the correctly set bit.
-    pub fn get_possible_move(&self, column: usize) -> u64 {
+    pub fn get_possible_move(&self, column: u32) -> u64 {
         debug_check_board_coordinates!(col: column);
         get_possible_move(self.own_stones | self.opponent_stones, column)
     }
@@ -119,7 +113,7 @@ impl BitBoard {
     /// Gets the destination height for a move. This is the slot number,
     /// where the move will wind up. The method is slow and only be intended to be used
     /// for rendering purposes. Returns none of the move is not possible.
-    pub fn get_move_destination(&self, column: usize) -> Option<usize> {
+    pub fn get_move_destination(&self, column: u32) -> Option<u32> {
         debug_check_board_coordinates!(col: column);
         let move_spot = get_possible_move(self.own_stones | self.opponent_stones, column);
         for y in 0..BOARD_HEIGHT {
@@ -132,7 +126,7 @@ impl BitBoard {
 
     /// Simplifies making a move on a column on the outside. It has to be guarantied that move is possible.
     /// This function is meant for UI only and not the AI.
-    pub fn apply_move_on_column(&mut self, column: usize, is_computer: bool) {
+    pub fn apply_move_on_column(&mut self, column: u32, is_computer: bool) {
         let coded_move = self.get_possible_move(column);
         debug_assert!(coded_move != 0, "The indicated move is not possible.");
         self.apply_move(coded_move, is_computer);
@@ -172,7 +166,7 @@ impl BitBoard {
     /// Gets an iterator of all possible moves. This method is meant for the ai.
     /// The iterator returns the move and the original move index.
     #[inline(always)]
-    pub fn get_all_possible_moves(&self) -> impl Iterator<Item = (u64, usize)> {
+    pub fn get_all_possible_moves(&self) -> impl Iterator<Item = (u64, u32)> {
         get_all_possible_moves(self.opponent_stones | self.own_stones)
     }
 
@@ -185,8 +179,8 @@ impl BitBoard {
 
     /// Analyzes the winning condition for the game board to be used in combination with the user interface
     /// system. It returns the situation and if one party has won, it returns the stone coordinates of the
-    /// stones generating four stones. This can eventually be more than one into one direction.
-    pub fn get_winning_status_for_rendering(&self) -> (GameResult, Option<Vec<(usize, usize)>>) {
+    /// stones generating four stones. This can eventually be more than one into one direction. &
+    pub fn get_winning_status_for_rendering(&self) -> (GameResult, Option<Vec<(u32, u32)>>) {
         let first_board;
         let second_board;
 
@@ -213,5 +207,72 @@ impl BitBoard {
         } else {
             (GameResult::Pending, None)
         }
+    }
+
+    /// Returns the number doublets and open triplets we have.
+    fn count_open_three_and_doubles(board: u64, free_spots: u64) -> (u32, u32)
+    {
+        let mut triplets = 0;
+        let mut doublets = 0;
+
+        for bit_shift in DIR_INCREMENT {
+            // XXX_ Pattern
+            let d = clip_shift(board, bit_shift) & board;
+            doublets += d.count_ones();
+            let dd = clip_shift(d, bit_shift) & board;
+            let triplets_after = clip_shift(dd, bit_shift) & free_spots;
+            triplets += triplets_after.count_ones();
+
+            // _XXX Pattern
+            let triplets_before = (dd >> (3 * bit_shift)) & free_spots;
+            triplets += triplets_before.count_ones();
+        }
+
+        (doublets, triplets)
+    }
+
+
+    /// Masking central column, the two columns beside the central and one pair even one further out.
+    const BOARD_EVALUATION_MASK :[u64; 3] = [
+            get_column_mask(3),
+            get_column_mask(2) | get_column_mask(4),
+            get_column_mask(1) | get_column_mask(5)
+    ];
+
+
+    /// Counts the amount of stones, that are on the centerline, one line away from the center line
+    /// and two lines away from the center line and multiplies it with a scoring and adds it up..
+    fn get_board_scoring(board: u64) ->  f32
+    {
+        let center = (board & Self::BOARD_EVALUATION_MASK[0]).count_ones() as f32  * 0.015;
+        let one_off_center = (board & Self::BOARD_EVALUATION_MASK[1]).count_ones() as f32  * 0.07;
+        let two_off_center = (board & Self::BOARD_EVALUATION_MASK[2]).count_ones() as f32  * 0.03;
+
+        center + one_off_center + two_off_center
+    }
+
+    /// Does the complete heuristic evaluation of the game board.
+    pub fn compute_heuristics(&self) -> f32 {
+        debug_assert!(!self.is_game_over(), "The game over state should have already been prechecked.");
+
+        let free_spots = !(self.opponent_stones | self.own_stones) & FULL_BOARD_MASK;
+        let mut score = 0.0;
+
+        // 1. Pairing combination
+        let (doublets, open_three) = Self::count_open_three_and_doubles(self.own_stones, free_spots);
+        score += open_three as f32 * 0.04;
+        score += doublets as f32 * 0.01;
+        let (doublets, open_three) = Self::count_open_three_and_doubles(self.opponent_stones, free_spots);
+        score -= open_three as f32 * 0.04;
+        score -= doublets as f32 * 0.01;
+
+        // 2. board control.
+       score += Self::get_board_scoring(self.own_stones);
+       score -= Self::get_board_scoring(self.opponent_stones);
+
+
+        // We do not clamp against exactly one, so that whatever the outcome is,
+        // it will always be dominated by a guaranteed win or loss.
+        score.clamp(-0.9999, 0.999)
     }
 }

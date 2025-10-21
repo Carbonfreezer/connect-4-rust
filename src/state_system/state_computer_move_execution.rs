@@ -5,7 +5,7 @@ use crate::render_system::stone_animator::StoneAnimator;
 use crate::state_system::game_state::{Blackboard, GameState, GameStateIndex};
 
 pub struct StateComputerMoveExecution {
-    slot_picked: usize,
+    slot_picked: u32,
     animator: StoneAnimator,
 }
 

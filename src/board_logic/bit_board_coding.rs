@@ -16,19 +16,19 @@
 use crate::debug_check_board_coordinates;
 
 /// The width of the board.
-pub const BOARD_WIDTH: usize = 7;
+pub const BOARD_WIDTH: u32 = 7;
 
 /// The height of the board.
-pub const BOARD_HEIGHT: usize = 6;
+pub const BOARD_HEIGHT: u32 = 6;
 
 /// Gets a mask, where the bit at the indicated position is set.
 #[inline(always)]
-pub const fn get_bit_representation(x: usize, y: usize) -> u64 {
+pub const fn get_bit_representation(x: u32, y: u32) -> u64 {
     1 << (x + 8 * y)
 }
 
 /// Generates a mask for one specific column.
-const fn get_column_mask(col: usize) -> u64 {
+pub const fn get_column_mask(col: u32) -> u64 {
     let mut result: u64 = 0;
     let mut y = 0;
     while y < BOARD_HEIGHT {
@@ -100,7 +100,7 @@ pub fn flip_board(input: u64) -> u64 {
     return result;
 }
 /// Slow method only to be used for board drawing, gets all elements from the boards as coordinates.
-pub fn get_position_iterator(board: u64) -> impl Iterator<Item = (usize, usize)> {
+pub fn get_position_iterator(board: u64) -> impl Iterator<Item = (u32, u32)> {
     (0..BOARD_WIDTH)
         .flat_map(|x| (0..BOARD_HEIGHT).map(move |y| (x, y)))
         .filter(move |&(x, y)| board & (1 << (x + 8 * y)) != 0)
@@ -109,21 +109,21 @@ pub fn get_position_iterator(board: u64) -> impl Iterator<Item = (usize, usize)>
 /// Applies the indicated shift for movement by the shift value and clips
 /// the value against the sentinel.
 #[inline(always)]
-fn clip_shift(input: u64, amount: u8) -> u64 {
+pub fn clip_shift(input: u64, amount: u8) -> u64 {
     (input << amount) & FULL_BOARD_MASK
 }
 
 
 /// Gets a  representation, where the bit for the specific column is set where a move would wind up.
 /// If it is not possible to make move in that column, a 0 is returned.
-pub fn get_possible_move(board: u64, column: usize) -> u64 {
+pub fn get_possible_move(board: u64, column: u32) -> u64 {
     debug_check_board_coordinates!(col: column);
     // Safely upshifted board extended with a bottom row.
     ((clip_shift(board, DIR_INCREMENT[1]) | BOTTOM_FILL_MASK) ^
         // The original board.
         board )
         // Filter out the desired column.
-        & COLUMN_MASK[column]
+        & COLUMN_MASK[column as usize]
 }
 
 /// Checks if the game board contains a winning constellation.
@@ -153,17 +153,6 @@ pub fn check_for_winning(board: u64) -> bool {
 }
 
 
-/// Analyzes the amount of combinations we have for three stones, that can still
-/// develop into a win.
-pub fn check_for_free_three(board: u64) -> u32 {
-    let mut count = 0;
-    for bit_shift in DIR_INCREMENT {
-        let d = clip_shift(board, bit_shift) & board;
-        let three = clip_shift(d, bit_shift) & board;
-        count += three.count_ones()
-    }
-    count
-}
 
 
 
@@ -193,10 +182,10 @@ pub fn get_winning_board(board: u64) -> u64 {
 /// Gets an iterator for all possible moves for the AI. The iterator returns the move and the original
 /// move index.
 #[inline(always)]
-pub fn get_all_possible_moves(board: u64) -> impl Iterator<Item = (u64, usize)> {
+pub fn get_all_possible_moves(board: u64) -> impl Iterator<Item = (u64, u32)> {
     let comb = (clip_shift(board, DIR_INCREMENT[1]) | BOTTOM_FILL_MASK) ^ board;
         (0..7)
         .into_iter()
-        .map(move |x| (comb & COLUMN_MASK[x], x))
+        .map(move |x| (comb & COLUMN_MASK[x], x as u32))
         .filter(|&x| x.0 != 0)
 }

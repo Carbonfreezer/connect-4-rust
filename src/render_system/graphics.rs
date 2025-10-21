@@ -300,7 +300,7 @@ impl GraphicsPainter {
     pub const CIRCLE_RADIUS: f32 = 1.0 / BOARD_WIDTH as f32 * 0.8;
 
     /// Returns the drawing coordinates for an indicated stone position.
-    pub fn get_drawing_coordinates(x_stone: usize, y_stone: usize) -> [f32; 2] {
+    pub fn get_drawing_coordinates(x_stone: u32, y_stone: u32) -> [f32; 2] {
         debug_check_board_coordinates!(x_stone, y_stone);
         [
             (x_stone as f32 / BOARD_WIDTH as f32) * 2.0 - 1.0 + 1.0 / BOARD_WIDTH as f32,
@@ -309,7 +309,7 @@ impl GraphicsPainter {
     }
 
     /// Gets a painting position above the column.
-    pub const fn get_drawing_coordinates_above_column(column: usize) -> [f32; 2] {
+    pub const fn get_drawing_coordinates_above_column(column: u32) -> [f32; 2] {
         [
             (column as f32 / BOARD_WIDTH as f32) * 2.0 - 1.0 + 1.0 / BOARD_WIDTH as f32,
             (6.0 / BOARD_WIDTH as f32) * 2.0 - 1.0 + 1.0 / BOARD_WIDTH as f32,
@@ -351,7 +351,7 @@ impl GraphicsPainter {
     pub fn render_winning_stones(
         &self,
         is_first_player_winning: bool,
-        list_of_positions: &Vec<(usize, usize)>,
+        list_of_positions: &Vec<(u32, u32)>,
     ) {
         let color = if is_first_player_winning {
             Color::LightYellow
