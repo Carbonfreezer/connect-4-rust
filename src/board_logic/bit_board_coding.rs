@@ -97,7 +97,7 @@ pub fn flip_board(input: u64) -> u64 {
     result |= (input & COLUMN_MASK[1]) << 4;
     result |= (input & COLUMN_MASK[0]) << 6;
 
-    return result;
+    result
 }
 /// Slow method only to be used for board drawing, gets all elements from the boards as coordinates.
 pub fn get_position_iterator(board: u64) -> impl Iterator<Item = (u32, u32)> {
@@ -112,7 +112,6 @@ pub fn get_position_iterator(board: u64) -> impl Iterator<Item = (u32, u32)> {
 pub fn clip_shift(input: u64, amount: u8) -> u64 {
     (input << amount) & FULL_BOARD_MASK
 }
-
 
 /// Gets a  representation, where the bit for the specific column is set where a move would wind up.
 /// If it is not possible to make move in that column, a 0 is returned.
@@ -152,10 +151,6 @@ pub fn check_for_winning(board: u64) -> bool {
     false
 }
 
-
-
-
-
 /// Generates a board representation, where bits are set that belong to a winning combination.
 /// Makes use of the fact, that *check_for_winning* effectively collapsed a winning combination
 /// into one bit that is the furthest out in shift direction. So we invert the shift three times
@@ -171,7 +166,7 @@ pub fn get_winning_board(board: u64) -> u64 {
         result |= flag;
         // We can safely shift back, because we came from there.
         for _ in 0..3 {
-            flag = flag >> bit_shift;
+            flag >>= bit_shift;
             result |= flag;
         }
     }
@@ -184,8 +179,7 @@ pub fn get_winning_board(board: u64) -> u64 {
 #[inline(always)]
 pub fn get_all_possible_moves(board: u64) -> impl Iterator<Item = (u64, u32)> {
     let comb = (clip_shift(board, DIR_INCREMENT[1]) | BOTTOM_FILL_MASK) ^ board;
-        (0..7)
-        .into_iter()
+    (0..7)
         .map(move |x| (comb & COLUMN_MASK[x], x as u32))
         .filter(|&x| x.0 != 0)
 }

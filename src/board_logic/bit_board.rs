@@ -1,6 +1,9 @@
 //! This module contains the game board represented as a bit board.
 
-use crate::board_logic::bit_board_coding::{BOARD_HEIGHT, BOARD_WIDTH, FULL_BOARD_MASK, check_for_winning, get_all_possible_moves, get_bit_representation, get_winning_board, DIR_INCREMENT, clip_shift, get_column_mask};
+use crate::board_logic::bit_board_coding::{
+    BOARD_HEIGHT, BOARD_WIDTH, DIR_INCREMENT, FULL_BOARD_MASK, check_for_winning, clip_shift,
+    get_all_possible_moves, get_bit_representation, get_column_mask, get_winning_board,
+};
 use crate::board_logic::bit_board_coding::{flip_board, get_position_iterator, get_possible_move};
 use crate::debug_check_board_coordinates;
 use std::hash::Hash;
@@ -116,12 +119,7 @@ impl BitBoard {
     pub fn get_move_destination(&self, column: u32) -> Option<u32> {
         debug_check_board_coordinates!(col: column);
         let move_spot = get_possible_move(self.own_stones | self.opponent_stones, column);
-        for y in 0..BOARD_HEIGHT {
-            if move_spot & get_bit_representation(column, y) != 0 {
-                return Some(y);
-            }
-        }
-        None
+        (0..BOARD_HEIGHT).find(|&y| move_spot & get_bit_representation(column, y) != 0)
     }
 
     /// Simplifies making a move on a column on the outside. It has to be guarantied that move is possible.
@@ -152,8 +150,6 @@ impl BitBoard {
             self.opponent_stones ^= coded_move;
         }
     }
-
-
 
     /// Checks if we have a draw situation under the assumption that we do not have a winning
     /// one.
@@ -210,8 +206,7 @@ impl BitBoard {
     }
 
     /// Returns the number doublets and open triplets we have.
-    fn count_open_three_and_doubles(board: u64, free_spots: u64) -> (u32, u32)
-    {
+    fn count_open_three_and_doubles(board: u64, free_spots: u64) -> (u32, u32) {
         let mut triplets = 0;
         let mut doublets = 0;
 
@@ -231,45 +226,46 @@ impl BitBoard {
         (doublets, triplets)
     }
 
-
     /// Masking central column, the two columns beside the central and one pair even one further out.
-    const BOARD_EVALUATION_MASK :[u64; 3] = [
-            get_column_mask(3),
-            get_column_mask(2) | get_column_mask(4),
-            get_column_mask(1) | get_column_mask(5)
+    const BOARD_EVALUATION_MASK: [u64; 3] = [
+        get_column_mask(3),
+        get_column_mask(2) | get_column_mask(4),
+        get_column_mask(1) | get_column_mask(5),
     ];
-
 
     /// Counts the amount of stones, that are on the centerline, one line away from the center line
     /// and two lines away from the center line and multiplies it with a scoring and adds it up..
-    fn get_board_scoring(board: u64) ->  f32
-    {
-        let center = (board & Self::BOARD_EVALUATION_MASK[0]).count_ones() as f32  * 0.015;
-        let one_off_center = (board & Self::BOARD_EVALUATION_MASK[1]).count_ones() as f32  * 0.07;
-        let two_off_center = (board & Self::BOARD_EVALUATION_MASK[2]).count_ones() as f32  * 0.03;
+    fn get_board_scoring(board: u64) -> f32 {
+        let center = (board & Self::BOARD_EVALUATION_MASK[0]).count_ones() as f32 * 0.015;
+        let one_off_center = (board & Self::BOARD_EVALUATION_MASK[1]).count_ones() as f32 * 0.07;
+        let two_off_center = (board & Self::BOARD_EVALUATION_MASK[2]).count_ones() as f32 * 0.03;
 
         center + one_off_center + two_off_center
     }
 
     /// Does the complete heuristic evaluation of the game board.
     pub fn compute_heuristics(&self) -> f32 {
-        debug_assert!(!self.is_game_over(), "The game over state should have already been prechecked.");
+        debug_assert!(
+            !self.is_game_over(),
+            "The game over state should have already been prechecked."
+        );
 
         let free_spots = !(self.opponent_stones | self.own_stones) & FULL_BOARD_MASK;
         let mut score = 0.0;
 
         // 1. Pairing combination
-        let (doublets, open_three) = Self::count_open_three_and_doubles(self.own_stones, free_spots);
+        let (doublets, open_three) =
+            Self::count_open_three_and_doubles(self.own_stones, free_spots);
         score += open_three as f32 * 0.04;
         score += doublets as f32 * 0.01;
-        let (doublets, open_three) = Self::count_open_three_and_doubles(self.opponent_stones, free_spots);
+        let (doublets, open_three) =
+            Self::count_open_three_and_doubles(self.opponent_stones, free_spots);
         score -= open_three as f32 * 0.04;
         score -= doublets as f32 * 0.01;
 
         // 2. board control.
-       score += Self::get_board_scoring(self.own_stones);
-       score -= Self::get_board_scoring(self.opponent_stones);
-
+        score += Self::get_board_scoring(self.own_stones);
+        score -= Self::get_board_scoring(self.opponent_stones);
 
         // We do not clamp against exactly one, so that whatever the outcome is,
         // it will always be dominated by a guaranteed win or loss.

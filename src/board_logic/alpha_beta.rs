@@ -5,9 +5,7 @@
 //! accounts for symmetry.
 
 use crate::board_logic::bit_board::{BitBoard, SymmetryIndependentPosition};
-use crate::board_logic::bit_board_coding::{
-    FULL_BOARD_MASK,  check_for_winning,
-};
+use crate::board_logic::bit_board_coding::{FULL_BOARD_MASK, check_for_winning};
 use std::collections::HashMap;
 
 /// The search depth we want to apply.
@@ -138,7 +136,7 @@ impl AlphaBeta {
         &mut self,
         alpha: f32,
         beta: f32,
-        heuristics : f32,
+        heuristics: f32,
         depth: u32,
         max_depth: u32,
     ) -> (f32, u32) {
@@ -155,13 +153,12 @@ impl AlphaBeta {
             "The case that we have have a draw should have also already been prechecked."
         );
 
-
         let search_key = self.bit_board.get_symmetry_independent_position();
         if let Some(&cached_value) = self.hash_map.get(&search_key) {
             // Transposition hit!
             return (cached_value, DUMMY_MOVE);
         }
-        
+
         // If we have reached max depth we simply return the heuristics value.
         if depth == max_depth {
             return (heuristics, DUMMY_MOVE);
@@ -192,7 +189,13 @@ impl AlphaBeta {
             // Apply move.
             self.bit_board.own_stones |= list_entry.coded_move;
             self.bit_board.swap_players();
-            let (new_result, _) = self.evaluate_next_move(-beta, -alpha,- list_entry.evaluation, depth + 1, max_depth );
+            let (new_result, _) = self.evaluate_next_move(
+                -beta,
+                -alpha,
+                -list_entry.evaluation,
+                depth + 1,
+                max_depth,
+            );
             self.bit_board.swap_players();
             self.bit_board.own_stones ^= list_entry.coded_move;
 
@@ -220,7 +223,6 @@ impl AlphaBeta {
     /// Gets the best move for the AI, sets the bit board and does all the computations.
     pub fn get_best_move(&mut self, bit_board: BitBoard) -> u32 {
         self.bit_board = bit_board;
-
 
         let (_, mov) = self.evaluate_next_move(-MAX_SCORE, MAX_SCORE, 0.0, 0, SEARCH_DEPTH);
 

@@ -8,7 +8,7 @@
 //! 2. The computer execution state, where a determined move gets executed.
 //! 3. The player input state. Input is processed here and also the animation is shown, when this would end ending the game.
 //! 4. The player stone animation and computer move calculation state. This is where the AI computation happens.
-//! The calculation gets spawned in a Tokio tak as soon as the animation starts.
+//!    The calculation gets assigned to a thread as soon as the animation starts.
 //! 5. The game end state, that shows the game situation and asks for a confirmation button to start over.
 //!
 //! Transitions are

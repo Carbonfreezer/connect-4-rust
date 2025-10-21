@@ -14,7 +14,7 @@ macro_rules! debug_check_draw_coordinates {
         // Forces f32 slice at compile time.
         let [x, y]: [f32; 2] = $coord;
         debug_assert!(
-            (-1.0 <= x) && (x <= 1.0) && (-1.0 <= y) && (y <= 1.0),
+            (-1.0..=1.0).contains(&x) && (-1.0..=1.0).contains(&y),
             "Illegal coordinates: x={}, y={} must be between -1.0 and 1.0",
             x,
             y,
