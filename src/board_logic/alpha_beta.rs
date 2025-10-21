@@ -138,6 +138,7 @@ impl AlphaBeta {
         &mut self,
         alpha: f32,
         beta: f32,
+        heuristics : f32,
         depth: u32,
         max_depth: u32,
     ) -> (f32, u32) {
@@ -161,11 +162,9 @@ impl AlphaBeta {
             return (cached_value, DUMMY_MOVE);
         }
         
-        
-        // TODO: Heuristics has already been computed once, that can be simplified.
         // If we have reached max depth we simply return the heuristics value.
         if depth == max_depth {
-            return (self.bit_board.compute_heuristics(), DUMMY_MOVE);
+            return (heuristics, DUMMY_MOVE);
         }
 
         let mut best_value = SCORE_GUARD;
@@ -193,7 +192,7 @@ impl AlphaBeta {
             // Apply move.
             self.bit_board.own_stones |= list_entry.coded_move;
             self.bit_board.swap_players();
-            let (new_result, _) = self.evaluate_next_move(-beta, -alpha, depth + 1, max_depth);
+            let (new_result, _) = self.evaluate_next_move(-beta, -alpha,- list_entry.evaluation, depth + 1, max_depth );
             self.bit_board.swap_players();
             self.bit_board.own_stones ^= list_entry.coded_move;
 
@@ -223,7 +222,7 @@ impl AlphaBeta {
         self.bit_board = bit_board;
 
 
-        let (_, mov) = self.evaluate_next_move(-MAX_SCORE, MAX_SCORE, 0, SEARCH_DEPTH);
+        let (_, mov) = self.evaluate_next_move(-MAX_SCORE, MAX_SCORE, 0.0, 0, SEARCH_DEPTH);
 
         // Demote hash map.
         self.hash_map_old = self.hash_map.clone();
