@@ -1,122 +1,134 @@
 # Connect Four in Rust
 
 ## Overview
-This project features a Negamax implementation of the Game Connect Four with transposition tables and alpha-beta pruning.
-We perform the calculations in a separate thread, allowing us to hide calculation time behind the animation of a falling stone.
-The interface is drawn in pure OpenGL.
+This project implements the classic Connect Four game with a sophisticated AI opponent. The AI uses a Negamax algorithm enhanced with alpha-beta pruning and transposition tables to play at a strong level. The game features smooth animations and is rendered using pure OpenGL, with AI calculations performed asynchronously to maintain responsive gameplay.
 
-The project comes with a relatively extensive documentation; you can generate it from the source code with
+Full source code documentation can be generated with:
 ```
-cargo doc
+cargo doc --open
 ```
 
-## Using the Program
-At the start of the program, you get to choose whether you want to play as the first player (yellow) or the second player
-(blue). You do so by simply clicking on one of the circles.
-<figure>
-    <img src="Images/IntroScreen.png" alt="Image of the intro screen" width="300" height="300">
-    <figcaption><b>Screenshot of the start screen.</b></figcaption>
-</figure>
-
-While the Game is running, you make your choice by clicking somewhere on the column you want to make your move in.
-<figure>
-    <img src="Images/RunningScreen.png" alt="Image of the screen while the game is in progress" width="300" height="300">
-    <figcaption><b>Screenshot of the Game in progress.</b></figcaption>
-</figure>
-
-Once the Game is over, you are taken to the finish screen, where the relevant stones are highlighted and the winning or draw
-situation is also shown with the small icon above the screen. By clicking somewhere on the screen, the player goes
-back to the start for game starter selection.
+## How to Play
+### Starting a Game
+When you launch the program, you'll be presented with a choice screen where you select your color by clicking on either the yellow or blue circle. Yellow always moves first.
 
 <figure>
-    <img src="Images/GameOver.png" alt="Image of the screen for a game over situation." width="300" height="300">
-    <figcaption><b>Screenshot of the Game over state.</b></figcaption>
+    <img src="Images/IntroScreen.png" alt="Start screen showing color selection" width="300" height="300">
+    <figcaption><b>Choose your color to begin</b></figcaption>
 </figure>
 
-## General Overview
-The program consists of three modules at the highest level:
-* **state_system**: This is the state machine the Game runs in, administering the different phases of the Game.
-* **render_system**: This is the interface to the OpenGL rendering core and also administers the animations.
-* **board_logic**: This is the board representation and the components belonging to the AI.
+### During Gameplay
+Make your move by clicking anywhere in the column where you want to drop your piece. Your stone will animate falling into position while the AI calculates its response in the background.
 
-## Conceptually interesting parts
+<figure>
+    <img src="Images/RunningScreen.png" alt="Active game with pieces on the board" width="300" height="300">
+    <figcaption><b>Playing against the AI</b></figcaption>
+</figure>
 
-### Things not related to AI
-In the state *state_computer_execution*, we spawn a thread, while the stone from the player falls, to hide the
-calculation of the AI, which runs in a different thread.
+### Game End
+When the game concludes, the winning combination is highlighted on the board, and the result is displayed with an icon above. Click anywhere to return to the color selection screen for a new game.
 
-In *graphics*, the rendering of the board is relatively tricky. The base shape of the board is a rectangle. The first idea
-was now to render black circles as holes, where no stone is contained. Rendering black circles would conflict with the falling pieces, which
-should be visible while falling. The solution we use here is that we first render the falling stone, then render
-the holes of the board only into the stencil buffer, and finally, the board only at points where the stencil is not set.
+<figure>
+    <img src="Images/GameOver.png" alt="Game over screen showing winning combination" width="300" height="300">
+    <figcaption><b>Game finished with highlighted winning stones</b></figcaption>
+</figure>
 
-### Things related to AI
-In the module *board_logic*, there is the board representation in *bit_board* and *bit_board_coding*, which encodes
-the board in 64-bit structures. That allows for efficient calculations by parallelizing logical operations over 64-bit
-registers. Because bit shift operations may cause in this flat representation structure a wrap around into
-different lines of the board, the concept of the sentinel has been introduced to prevent this. You can primarily see
-this in the function of *clip_shift*. In *bit_board*, you also find the concept of *SymmetryIndependentPosition*.
-We want to store already calculated positions for later lookup in the transposition table. As the Game is symmetric
-with respect to the y-axis, we want to make sure that later on, also the symmetric representation of the board gets
-identified in the transposition table.
+## Architecture
+The program is organized into three main modules:
 
-The core algorithm is in the module *alpha_beta*. This algorithm stores the game board and two transposition tables. One belongs to the current move and another one to the previous. The table from the last move is no longer up to date.
-But it can still be used as a heuristic for move ordering.
-The core alpha-beta algorithm is in the method *evaluate_next_move*. Here, we do a precheck to see if the situation is already in the
-transposition table. Then we check with *get_pre_sorted_move_list* to determine which moves still need to be analyzed and in which order.
+* **state_system**: Manages the game's state machine, coordinating transitions between menu, gameplay, and game-over states.
+* **render_system**: Handles OpenGL rendering and animations, including the smooth stone-dropping effects.
+* **board_logic**: Contains the game board representation and AI implementation.
 
-The method *get_pre_sorted_move_list* loops over all the move possibilities, executes them, and performs an analysis. For the case that these result in a game
-At the end of a situation already contained in the transposition table, we store the analyzed value and the corresponding move.
-Iterating recursively deeper with *evaluate_next_move* is unnecessary because it would result in a search termination on the next level
-anyway. The remaining moves should be ordered from most to least promising, to make the alpha-beta prune more efficient. As a
-priority, we try to query the transposition table of our old move. This table is not exact anymore, as we are now analyzing
-further ahead into the future. However, it should still be a better guess than the static evaluation of the heuristics' value.
-The finally sorted list is returned with the analysis of the moves that have already been pruned at this stage.
+## Technical Highlights
 
-When returned to *evaluate_next_move*, alpha beta checks are done on the pruned values, and then the returned working list is
-analyzed by recursion. In recursion, we apply a very slight discount factor to prefer early wins over later ones and late losses
-over early ones.
+### Asynchronous AI Computation
+In the `computer_calculation` state, AI calculations run in a separate thread using Rust's `mpsc` channels. This allows the opponent's stone to animate while the AI computes its next move, keeping the interface responsive. The threading approach was chosen over async/await (tokio) as it proved simpler and more appropriate for this use case.
 
-The module *heuristics* contains a simple and efficient heuristic to evaluate the board. Designing this is a matter of
-balancing quality vs efficiency.
+### Advanced Rendering with Stencil Buffers
+The board rendering presents an interesting challenge: displaying circular holes where stones can be placed while showing falling pieces that should remain visible as they drop. The solution uses a multi-pass rendering approach:
+1. First, render any falling stones
+2. Render the hole positions into the stencil buffer only
+3. Finally, render the board rectangle, masking out areas marked in the stencil buffer
 
-## Usage of Specific Rust Concepts
-We implemented in *debug_macros* two situation-specific assert macros that are used quite extensively in the project.
-The state machine in *game_state* uses smart pointers in terms of *Box<dyn GameState>*, because the actual implementation
-of the trait is not known at compile time. *bit_board_coding* makes extensive use of constant functions to compute all
-the required bit masks at compile time. In the state of *computer_calculation*, we make use of the Rust threading API
-with mpsc channels to get an asynchronous user interface effectively. Using tokio tasks for this turned out to be just overkill.
+This technique ensures falling stones are visible while maintaining clean circular cutouts in the board.
 
+### Efficient Bitboard Representation
+The game state is encoded using 64-bit integers, enabling highly efficient parallel operations through bitwise logic. Key concepts include:
 
+**Sentinel Guards**: The flat bitboard representation could allow bit shifts to wrap around into adjacent rows. Sentinel bits act as guardrails, preventing this issue. See the `clip_shift` function for implementation details.
 
-## Getting Started with Rust
-If you are new to Rust, here is a quick start:
+**Symmetry Detection**: Connect Four is symmetric along the vertical axis. The `SymmetryIndependentPosition` structure ensures that mirror-image board positions are recognized as equivalent in the transposition table, roughly doubling its effectiveness.
 
-1. Install Rust
-2. Build and run the program.
+### AI Implementation
 
-### Install Rust
-For *Linux* and *MacOS* users, open a terminal and enter the following command:
-```
+The core AI algorithm resides in the `alpha_beta` module and maintains two transposition tables:
+- **Current table**: Stores positions evaluated during the current move search
+- **Previous table**: Contains evaluations from the last move, reused for move ordering heuristics
+
+**Algorithm Flow**:
+
+1. `evaluate_next_move` checks if the current position exists in the transposition table
+2. If not cached, `get_pre_sorted_move_list` analyzes all available moves:
+  - Immediate wins/losses and draws are identified and handled without recursion
+  - Positions found in the transposition table are stored with their evaluations
+  - Remaining moves are sorted by promise (using old transposition table values or static heuristics)
+3. The sorted move list is then evaluated recursively with alpha-beta pruning
+4. A small discount factor (0.99999) encourages the AI to prefer quicker wins and delay losses, making its endgame behavior more natural
+
+**Move Ordering Strategy**:
+The old transposition table, while not perfectly accurate for the current search depth, provides better move ordering than pure heuristics. This significantly improves alpha-beta pruning efficiency.
+
+### Heuristic Evaluation
+The `heuristic` module implements a lightweight position evaluator that balances accuracy with computational efficiency. It considers:
+- Open three-in-a-row patterns (potential threats)
+- Two-in-a-row combinations
+- Control of center columns (strategically valuable)
+
+The heuristic is designed to be fast enough for evaluating thousands of positions per second while providing sufficient guidance for move ordering.
+
+## Rust Language Features
+
+This project demonstrates several Rust concepts:
+
+- **Custom Debug Macros** (`debug_macros`): Domain-specific assertion macros for board coordinate validation
+- **Trait Objects** (`Box<dyn GameState>`): Dynamic polymorphism for the state machine pattern
+- **Const Functions** (`bit_board_coding`): Compile-time computation of bitmasks and lookup tables
+- **Multithreading** (`std::sync::mpsc`): Inter-thread communication for asynchronous AI computation
+- **Zero-cost Abstractions**: Bitboard operations compile to efficient SIMD instructions
+
+## Getting Started
+
+### Installing Rust
+
+**Linux/macOS**:
+```bash
 curl --proto '=https' --tlsv1.3 https://sh.rustup.rs -sSf | sh
 ```
-For *Windows* users, get to the website
-[Windows Installer](https://www.rust-lang.org/tools/install).
 
-In both cases, you will wind up with mainly three programs:
-- **rustup**: This is the installer and updater.
-- **rustc**: This is the core compiler of the Rust language. You will rarely interface with it directly.
-- **cargo**: This program contains the package manager (something like PiPy in Python) and a complete build system.
-  This program is the central entry to the Rust world.
+**Windows**:
+Download the installer from [rust-lang.org/tools/install](https://www.rust-lang.org/tools/install)
 
-### Build and Run Game
-Once you have installed Rust, clone the directory from the repository, open a terminal, and navigate to the base directory
-where the file *Cargo.toml* is contained. From here, you may now run several commands:
+In both cases you three key tools:
+- `rustup`: Manages Rust versions and updates
+- `rustc`: The Rust compiler
+- `cargo`: Package manager and build system (your primary interface)
 
-- **cargo doc --open**: Generates and opens the documentation in the browser.
-- **cargo run -r** : Compiles in release mode and starts the app.
+### Building and Running
 
+Clone the repository and navigate to the directory containing `Cargo.toml`, then:
+```bash
+# Generate and open documentation
+cargo doc --open
+
+# Build and run in release mode (optimized)
+cargo run --release
+
+# Build for development (faster compilation, slower runtime)
+cargo run
+```
+
+**Note**: Always use `--release` for normal gameplay, as the AI search depth is tuned for optimized builds.
 
 ## License
-The program is published under the MIT license as explained in the [license file](LICENSE).
-
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
