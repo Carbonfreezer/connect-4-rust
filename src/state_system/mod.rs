@@ -15,6 +15,7 @@
 //! * 1->2 : If player chooses to be second, the move into the central slot gets executed on behalf of the computer.
 //! * 1->3 : When the player chooses to start, we wind up here.
 //! * 2->3: When the computer move is executed (animation) and the game end is not reached we go to player input.
+//! * 2->5: Computer move resulted in win or draw. 
 //! * 3->4: When the player has made the input and the input does not result in ending the game, we go over to 4.
 //! * 3->5: When the player input would result in ending the game, the animation is still played and then the transfer happens.
 //! * 5->1: When the player has acknowledged the result, we go to selection again.

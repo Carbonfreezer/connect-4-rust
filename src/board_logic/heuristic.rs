@@ -3,29 +3,35 @@
 //! whether dead or not and a board scoring that favours positions close to the central column.
 
 use crate::board_logic::bit_board::BitBoard;
-use crate::board_logic::bit_board_coding::{
-    DIR_INCREMENT, FULL_BOARD_MASK, clip_shift, get_column_mask,
-};
+use crate::board_logic::bit_board_coding::{DIR_INCREMENT, FULL_BOARD_MASK, clip_shift, get_column_mask, clip_shift_inverse, debug_log_board};
 
-/// Returns the number doublets and open triplets we have.
-fn count_open_three_and_doubles(board: u64, free_spots: u64) -> (u32, u32) {
+/// Returns the number of open triplets we have.
+fn count_open_three_and_doubles(board: u64, free_spots: u64) -> u32 {
     let mut triplets = 0;
-    let mut doublets = 0;
 
     for bit_shift in DIR_INCREMENT {
         // XXX_ Pattern
-        let d = clip_shift(board, bit_shift) & board;
-        doublets += d.count_ones();
-        let dd = clip_shift(d, bit_shift) & board;
+        let double_pos = clip_shift(board, bit_shift) & board;
+        let dd = clip_shift(double_pos, bit_shift) & board;
         let triplets_after = clip_shift(dd, bit_shift) & free_spots;
         triplets += triplets_after.count_ones();
-
+        
+        // XX_X pattern
+        let free_match = clip_shift(double_pos, bit_shift) & free_spots;
+        let spot_right = clip_shift(free_match, bit_shift) & board;
+        triplets += spot_right.count_ones();
+        
+        // X_XX pattern
+        let free_left_match = clip_shift_inverse(clip_shift_inverse(double_pos, bit_shift), bit_shift) & free_spots;
+        let spot_left = clip_shift_inverse(free_left_match, bit_shift) & board;
+        triplets += spot_left.count_ones();
+        
         // _XXX Pattern
-        let triplets_before = (dd >> (3 * bit_shift)) & free_spots;
+        let triplets_before = clip_shift_inverse(clip_shift_inverse(clip_shift_inverse(dd, bit_shift), bit_shift),bit_shift) & free_spots;
         triplets += triplets_before.count_ones();
     }
 
-    (doublets, triplets)
+    triplets
 }
 
 /// Masking central column, the two columns beside the central and one pair even one further out.
@@ -57,14 +63,12 @@ pub fn compute_heuristics(board_analyzed: &BitBoard, clamp_guard: f32) -> f32 {
     let mut score = 0.0;
 
     // 1. Pairing combination
-    let (doublets, open_three) =
+    let own_triplets =
         count_open_three_and_doubles(board_analyzed.own_stones, free_spots);
-    score += open_three as f32 * 0.04;
-    score += doublets as f32 * 0.01;
-    let (doublets, open_three) =
+    score += own_triplets as f32 * 0.04;
+    let opp_triplets =
         count_open_three_and_doubles(board_analyzed.opponent_stones, free_spots);
-    score -= open_three as f32 * 0.04;
-    score -= doublets as f32 * 0.01;
+    score -= opp_triplets as f32 * 0.04;
 
     // 2. board control.
     score += get_board_scoring(board_analyzed.own_stones);
