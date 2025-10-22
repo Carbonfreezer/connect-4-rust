@@ -109,7 +109,7 @@ curl --proto '=https' --tlsv1.3 https://sh.rustup.rs -sSf | sh
 **Windows**:
 Download the installer from [rust-lang.org/tools/install](https://www.rust-lang.org/tools/install)
 
-In both cases you three key tools:
+In both cases you get three key tools:
 - `rustup`: Manages Rust versions and updates
 - `rustc`: The Rust compiler
 - `cargo`: Package manager and build system (your primary interface)
