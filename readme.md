@@ -80,7 +80,7 @@ over early ones.
 The module *heuristics* contains a simple and efficient heuristic to evaluate the board. Designing this is a matter of
 balancing quality vs efficiency.
 
-## Usage of Specific Rust concepts
+## Usage of Specific Rust Concepts
 We implemented in *debug_macros* two situation-specific assert macros that are used quite extensively in the project.
 The state machine in *game_state* uses smart pointers in terms of *Box<dyn GameState>*, because the actual implementation
 of the trait is not known at compile time. *bit_board_coding* makes extensive use of constant functions to compute all
