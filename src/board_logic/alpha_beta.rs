@@ -49,7 +49,9 @@ struct WorkingListEntry {
     evaluation: f32,
 }
 
-/// A result wer get for the presorting.
+/// A result we get for the presorting. The presort result is used for
+/// move ordering to help the alpha beta clip. Eventually found end games and
+/// some of the TT look ups are already filtered out at this stage.
 struct PresortResult {
     /// The maximum score we have reached on precached moves and winnings.
     pub max_score: f32,
@@ -147,9 +149,9 @@ impl AlphaBeta {
     /// * **beta**: The beta value of the alpha beta algorithm. This is the oner that generates the early exit.
     /// * **heuristics**: The heuristical evaluation of the current situation.
     /// * **depth**: The current search depth.
-    /// 
+    ///
     /// # Returns
-    /// A pair of the node evaluation and eventually a chosen move. In the case of a TT hit or max search_depth we do not 
+    /// A pair of the node evaluation and eventually a chosen move. In the case of a TT hit or max search_depth we do not
     /// generate this (None).
     fn evaluate_next_move(
         &mut self,

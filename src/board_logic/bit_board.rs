@@ -29,6 +29,8 @@ pub struct BitBoard {
 }
 
 /// This is the symmetry independent coding that can be used for the transposition table.
+/// Has a representation for own and opponent stones. This structure is meant has a key into the 
+/// hash map.
 #[derive(Hash, PartialEq, Eq, Clone)]
 pub struct SymmetryIndependentPosition {
     pub own: u64,
@@ -174,8 +176,8 @@ impl BitBoard {
     }
 
     /// Analyzes the winning condition for the game board to be used in combination with the user interface
-    /// system. It returns the situation and if one party has won, it returns the stone coordinates of the
-    /// stones generating four stones. This can eventually be more than one into one direction. &
+    /// system. It returns the situation and if one party has won. It also returns the stone coordinates of the
+    /// stones generating four stones. The result may be more than four stones.
     pub fn get_winning_status_for_rendering(&self) -> (GameResult, Option<Vec<(u32, u32)>>) {
         let first_board;
         let second_board;
@@ -234,7 +236,7 @@ impl BitBoard {
     ];
 
     /// Counts the amount of stones, that are on the centerline, one line away from the center line
-    /// and two lines away from the center line and multiplies it with a scoring and adds it up..
+    /// and two lines away from the center line and multiplies it with a scoring and adds it up.
     fn get_board_scoring(board: u64) -> f32 {
         let center = (board & Self::BOARD_EVALUATION_MASK[0]).count_ones() as f32 * 0.015;
         let one_off_center = (board & Self::BOARD_EVALUATION_MASK[1]).count_ones() as f32 * 0.07;
