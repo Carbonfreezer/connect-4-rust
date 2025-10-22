@@ -4,6 +4,7 @@
 //! The transposition table is enhanced by a canonical board coding and a coding that
 //! accounts for symmetry.
 
+use crate::board_logic::heuristic::compute_heuristics;
 use crate::board_logic::bit_board_coding::BOARD_WIDTH;
 use crate::board_logic::bit_board::{BitBoard, SymmetryIndependentPosition};
 use crate::board_logic::bit_board_coding::{FULL_BOARD_MASK, check_for_winning};
@@ -122,7 +123,7 @@ impl AlphaBeta {
                         local_sorter.push(WorkingListEntry {
                             coded_move,
                             slot,
-                            evaluation: BitBoard::compute_heuristics(&test_board, CLAMP_GUARD_HEURISTIC),
+                            evaluation: compute_heuristics(&test_board, CLAMP_GUARD_HEURISTIC),
                         });
                     }
                 }
