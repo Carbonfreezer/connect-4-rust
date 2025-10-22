@@ -3,7 +3,7 @@
 //! whether dead or not and a board scoring that favours positions close to the central column.
 
 use crate::board_logic::bit_board::BitBoard;
-use crate::board_logic::bit_board_coding::{DIR_INCREMENT, FULL_BOARD_MASK, clip_shift, get_column_mask, clip_shift_inverse, debug_log_board};
+use crate::board_logic::bit_board_coding::{DIR_INCREMENT, FULL_BOARD_MASK, clip_shift, get_column_mask, clip_shift_inverse, debug_log_board, BOARD_WIDTH, BOARD_HEIGHT, get_bit_representation};
 
 /// Returns the number of open triplets we have.
 fn count_open_three_and_doubles(board: u64, free_spots: u64) -> u32 {
@@ -15,17 +15,17 @@ fn count_open_three_and_doubles(board: u64, free_spots: u64) -> u32 {
         let dd = clip_shift(double_pos, bit_shift) & board;
         let triplets_after = clip_shift(dd, bit_shift) & free_spots;
         triplets += triplets_after.count_ones();
-        
+
         // XX_X pattern
         let free_match = clip_shift(double_pos, bit_shift) & free_spots;
         let spot_right = clip_shift(free_match, bit_shift) & board;
         triplets += spot_right.count_ones();
-        
+
         // X_XX pattern
         let free_left_match = clip_shift_inverse(clip_shift_inverse(double_pos, bit_shift), bit_shift) & free_spots;
         let spot_left = clip_shift_inverse(free_left_match, bit_shift) & board;
         triplets += spot_left.count_ones();
-        
+
         // _XXX Pattern
         let triplets_before = clip_shift_inverse(clip_shift_inverse(clip_shift_inverse(dd, bit_shift), bit_shift),bit_shift) & free_spots;
         triplets += triplets_before.count_ones();
@@ -33,6 +33,15 @@ fn count_open_three_and_doubles(board: u64, free_spots: u64) -> u32 {
 
     triplets
 }
+
+
+const BOARD_POSITION_CODING_ORIGINAL : [f32; 42] = [3.0,4.0,5.0,7.0,5.0,4.0,3.0,
+                                                    4.0, 6.0, 8.0, 10.0, 8.0,6.0, 4.0,
+                                                    5.0, 8.0, 11.0, 13.0,11.0, 8.0, 5.0,
+                                                    5.0, 8.0, 11.0, 13.0,11.0, 8.0, 5.0,
+                                                    4.0, 6.0, 8.0, 10.0, 8.0,6.0, 4.0,
+                                                    3.0,4.0,5.0,7.0,5.0,4.0,3.0,
+            ];
 
 /// Masking central column, the two columns beside the central and one pair even one further out.
 const BOARD_EVALUATION_MASK: [u64; 3] = [
@@ -44,11 +53,14 @@ const BOARD_EVALUATION_MASK: [u64; 3] = [
 /// Counts the amount of stones, that are on the centerline, one line away from the center line
 /// and two lines away from the center line and multiplies it with a scoring and adds it up.
 fn get_board_scoring(board: u64) -> f32 {
-    let center = (board & BOARD_EVALUATION_MASK[0]).count_ones() as f32 * 0.015;
-    let one_off_center = (board & BOARD_EVALUATION_MASK[1]).count_ones() as f32 * 0.007;
-    let two_off_center = (board & BOARD_EVALUATION_MASK[2]).count_ones() as f32 * 0.003;
+    let mut score = 0.0;
+    for x in 0..BOARD_WIDTH {
+        for y in 0..BOARD_HEIGHT {
+            if (get_bit_representation(x,y) & board != 0) {score += BOARD_POSITION_CODING_ORIGINAL[(x + y * 7) as usize];}
+        }
+    }
 
-    center + one_off_center + two_off_center
+    score * 0.001
 }
 
 /// Does the complete heuristic evaluation of the game board.
