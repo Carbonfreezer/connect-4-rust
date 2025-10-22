@@ -13,9 +13,6 @@ use crate::debug_check_board_coordinates;
 /// The search depth we want to apply.
 const SEARCH_DEPTH: u32 = 12;
 
-/// The dummy move we use as an index.
-const DUMMY_MOVE: u32 = 100;
-
 /// We clamp values to the region of 1: guaranteed winn to -1: guaranteed loss.
 const MAX_SCORE: f32 = 1.0;
 
@@ -57,7 +54,7 @@ struct PresortResult {
     /// The maximum score we have reached on precached moves and winnings.
     pub max_score: f32,
     /// The move that belongs to the best score.
-    pub best_move: u32,
+    pub best_move: Option<u32>,
     /// The list with the remainder we still have to process. Contains the coded board,
     /// the move index and the evaluation. The position is to avoid recalculating the has structs.
     pub working_list: Vec<WorkingListEntry>,
@@ -78,7 +75,7 @@ impl AlphaBeta {
     /// Alpha-Beta.
     fn get_pre_sorted_move_list(&mut self) -> PresortResult {
         let mut local_max = SCORE_GUARD;
-        let mut local_move = DUMMY_MOVE;
+        let mut local_move = None;
         let mut test_board = self.bit_board.clone();
         let mut local_sorter = Vec::<WorkingListEntry>::new();
 
@@ -88,10 +85,10 @@ impl AlphaBeta {
             // First we try the immediate situations, because it is a win a loss or a draw.
             if check_for_winning(test_board.own_stones) {
                 local_max = MAX_SCORE;
-                local_move = slot;
+                local_move = Some(slot);
             } else if (test_board.own_stones | test_board.opponent_stones) == FULL_BOARD_MASK {
                 local_max = 0.0;
-                local_move = slot;
+                local_move = Some(slot);
             }
             // Then we look in the transposition tables.
             else {
@@ -106,7 +103,7 @@ impl AlphaBeta {
                     let score = -*evaluation;
                     if score > local_max {
                         local_max = score;
-                        local_move = slot;
+                        local_move = Some(slot);
                     }
                 } else {
                     // Hopefully it is still in the transposition table from last move.
@@ -145,18 +142,22 @@ impl AlphaBeta {
     /// Evaluate the next move and returns the applied move and the value. This is the implementation
     /// of the Negamax algorithm.
     ///
-    /// Parameters:
+    /// # Parameters:
     /// * **alpha**: The alpha value of the alpha beta algorithm. This is the value that gets increased.
     /// * **beta**: The beta value of the alpha beta algorithm. This is the oner that generates the early exit.
     /// * **heuristics**: The heuristical evaluation of the current situation.
     /// * **depth**: The current search depth.
+    /// 
+    /// # Returns
+    /// A pair of the node evaluation and eventually a chosen move. In the case of a TT hit or max search_depth we do not 
+    /// generate this (None).
     fn evaluate_next_move(
         &mut self,
         alpha: f32,
         beta: f32,
         heuristics: f32,
         depth: u32,
-    ) -> (f32, u32) {
+    ) -> (f32, Option<u32>) {
         // We should never wind up in a situation where the current position is a draw or winning,
         // because that has already been checked in get_pre_sorted_move_list from previous call. We insert it as
         // debug assert here.
@@ -173,12 +174,12 @@ impl AlphaBeta {
         let search_key = self.bit_board.get_symmetry_independent_position();
         if let Some(&cached_value) = self.hash_map.get(&search_key) {
             // Transposition hit!
-            return (cached_value, DUMMY_MOVE);
+            return (cached_value, None);
         }
 
         // If we have reached max depth we simply return the heuristics value.
         if depth == SEARCH_DEPTH {
-            return (heuristics, DUMMY_MOVE);
+            return (heuristics, None);
         }
 
         let mut best_value = SCORE_GUARD;
@@ -187,8 +188,8 @@ impl AlphaBeta {
         let presort_result = self.get_pre_sorted_move_list();
         let mut alpha = alpha;
         // The presort result has already filtered out sone moves, that either run into an ending or are already completely analyzed.
-        if presort_result.best_move != DUMMY_MOVE {
-            best_slot = presort_result.best_move;
+        if presort_result.best_move.is_some() {
+            best_slot = presort_result.best_move.unwrap();
             best_value = presort_result.max_score;
         }
 
@@ -197,7 +198,7 @@ impl AlphaBeta {
             alpha = best_value;
             if best_value >= beta {
                 self.hash_map.insert(search_key, best_value);
-                return (best_value, best_slot);
+                return (best_value, Some(best_slot));
             }
         }
 
@@ -233,7 +234,7 @@ impl AlphaBeta {
         // Insert value into hashmap.
         self.hash_map.insert(search_key, best_value);
 
-        (best_value, best_slot)
+        (best_value, Some(best_slot))
     }
 
     /// Gets the best move for the AI, sets the bit board and does all the computations.
@@ -245,6 +246,8 @@ impl AlphaBeta {
         // Demote hash map.
         self.hash_map_old = self.hash_map.clone();
         self.hash_map.clear();
+        debug_assert!(mov.is_some(), "We wound up with an empty move here");
+        let mov = mov.unwrap();
         debug_check_board_coordinates!(col: mov);
         mov
     }
