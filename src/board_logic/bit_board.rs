@@ -244,7 +244,7 @@ impl BitBoard {
     }
 
     /// Does the complete heuristic evaluation of the game board.
-    pub fn compute_heuristics(&self) -> f32 {
+    pub fn compute_heuristics(&self, clamp_guard : f32) -> f32 {
         debug_assert!(
             !self.is_game_over(),
             "The game over state should have already been prechecked."
@@ -269,6 +269,6 @@ impl BitBoard {
 
         // We do not clamp against exactly one, so that whatever the outcome is,
         // it will always be dominated by a guaranteed win or loss.
-        score.clamp(-0.9999, 0.999)
+        score.clamp(-clamp_guard, clamp_guard)
     }
 }

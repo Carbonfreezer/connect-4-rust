@@ -4,9 +4,11 @@
 //! The transposition table is enhanced by a canonical board coding and a coding that
 //! accounts for symmetry.
 
+use crate::board_logic::bit_board_coding::BOARD_WIDTH;
 use crate::board_logic::bit_board::{BitBoard, SymmetryIndependentPosition};
 use crate::board_logic::bit_board_coding::{FULL_BOARD_MASK, check_for_winning};
 use std::collections::HashMap;
+use crate::debug_check_board_coordinates;
 
 /// The search depth we want to apply.
 const SEARCH_DEPTH: u32 = 12;
@@ -18,7 +20,16 @@ const DUMMY_MOVE: u32 = 100;
 const MAX_SCORE: f32 = 1.0;
 
 /// This score is lower than any of the others, we use it as an initialization to check to build the maximum.
-const SCORE_GUARD: f32 = -1.1;
+const SCORE_GUARD: f32 = - 1.1;
+
+/// The discount factor to favour fast wins and late losses.
+/// This should be extremely close to 1 because it interferes negatively with the
+/// transposition table.
+const DISCOUNT_FACTOR: f32 = 0.99999;
+
+/// The region we want to clamp the heuristics against, that it
+/// can never dominate even overdiscounted win / loss.
+const CLAMP_GUARD_HEURISTIC : f32 = 0.97;
 
 /// Contains a bit-board and a hashmap.
 pub struct AlphaBeta {
@@ -112,7 +123,7 @@ impl AlphaBeta {
                         local_sorter.push(WorkingListEntry {
                             coded_move,
                             slot,
-                            evaluation: self.bit_board.compute_heuristics(),
+                            evaluation: self.bit_board.compute_heuristics(CLAMP_GUARD_HEURISTIC),
                         });
                     }
                 }
@@ -131,14 +142,20 @@ impl AlphaBeta {
         }
     }
 
-    /// Evaluate the next move and returns the applied move and the value.
+    /// Evaluate the next move and returns the applied move and the value. This is the implementation
+    /// of the Negamax algorithm.
+    ///
+    /// Parameters:
+    /// * **alpha**: The alpha value of the alpha beta algorithm. This is the value that gets increased.
+    /// * **beta**: The beta value of the alpha beta algorithm. This is the oner that generates the early exit.
+    /// * **heuristics**: The heuristical evaluation of the current situation.
+    /// * **depth**: The current search depth.
     fn evaluate_next_move(
         &mut self,
         alpha: f32,
         beta: f32,
         heuristics: f32,
         depth: u32,
-        max_depth: u32,
     ) -> (f32, u32) {
         // We should never wind up in a situation where the current position is a draw or winning,
         // because that has already been checked in get_pre_sorted_move_list from previous call. We insert it as
@@ -160,7 +177,7 @@ impl AlphaBeta {
         }
 
         // If we have reached max depth we simply return the heuristics value.
-        if depth == max_depth {
+        if depth == SEARCH_DEPTH {
             return (heuristics, DUMMY_MOVE);
         }
 
@@ -193,13 +210,12 @@ impl AlphaBeta {
                 -beta,
                 -alpha,
                 -list_entry.evaluation,
-                depth + 1,
-                max_depth,
+                depth + 1
             );
             self.bit_board.swap_players();
             self.bit_board.own_stones ^= list_entry.coded_move;
 
-            let adjusted_result = -new_result;
+            let adjusted_result = -new_result * DISCOUNT_FACTOR;
             if adjusted_result > best_value {
                 best_value = adjusted_result;
                 best_slot = list_entry.slot;
@@ -224,12 +240,12 @@ impl AlphaBeta {
     pub fn get_best_move(&mut self, bit_board: BitBoard) -> u32 {
         self.bit_board = bit_board;
 
-        let (_, mov) = self.evaluate_next_move(-MAX_SCORE, MAX_SCORE, 0.0, 0, SEARCH_DEPTH);
+        let (_, mov) = self.evaluate_next_move(-MAX_SCORE, MAX_SCORE, 0.0, 0);
 
         // Demote hash map.
         self.hash_map_old = self.hash_map.clone();
         self.hash_map.clear();
-        debug_assert!(mov != DUMMY_MOVE, "We wound up with the dummy move here.");
+        debug_check_board_coordinates!(col: mov);
         mov
     }
 }
