@@ -122,7 +122,7 @@ impl AlphaBeta {
                         local_sorter.push(WorkingListEntry {
                             coded_move,
                             slot,
-                            evaluation: self.bit_board.compute_heuristics(CLAMP_GUARD_HEURISTIC),
+                            evaluation: BitBoard::compute_heuristics(&test_board, CLAMP_GUARD_HEURISTIC),
                         });
                     }
                 }
@@ -131,9 +131,10 @@ impl AlphaBeta {
             test_board.own_stones ^= coded_move;
         }
 
-        // We need to order the list in descending order by evaluation. sort_by_key does not work on float unfortunately.
-        // We make use of the fact that the value is 1 .. -1 range.
-        local_sorter.sort_by_key(|list_entry| (-list_entry.evaluation * 1_000_000.0) as i32);
+
+        // Do the inverse sort (descending order.).
+        local_sorter.sort_by(|first, second| second.evaluation.total_cmp(&first.evaluation));
+
         PresortResult {
             working_list: local_sorter,
             max_score: local_max,

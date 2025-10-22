@@ -239,35 +239,35 @@ impl BitBoard {
     /// and two lines away from the center line and multiplies it with a scoring and adds it up.
     fn get_board_scoring(board: u64) -> f32 {
         let center = (board & Self::BOARD_EVALUATION_MASK[0]).count_ones() as f32 * 0.015;
-        let one_off_center = (board & Self::BOARD_EVALUATION_MASK[1]).count_ones() as f32 * 0.07;
-        let two_off_center = (board & Self::BOARD_EVALUATION_MASK[2]).count_ones() as f32 * 0.03;
+        let one_off_center = (board & Self::BOARD_EVALUATION_MASK[1]).count_ones() as f32 * 0.007;
+        let two_off_center = (board & Self::BOARD_EVALUATION_MASK[2]).count_ones() as f32 * 0.003;
 
         center + one_off_center + two_off_center
     }
 
     /// Does the complete heuristic evaluation of the game board.
-    pub fn compute_heuristics(&self, clamp_guard : f32) -> f32 {
+    pub fn compute_heuristics(board_analyzed: &BitBoard,  clamp_guard : f32) -> f32 {
         debug_assert!(
-            !self.is_game_over(),
+            !board_analyzed.is_game_over(),
             "The game over state should have already been prechecked."
         );
 
-        let free_spots = !(self.opponent_stones | self.own_stones) & FULL_BOARD_MASK;
+        let free_spots = !(board_analyzed.opponent_stones | board_analyzed.own_stones) & FULL_BOARD_MASK;
         let mut score = 0.0;
 
         // 1. Pairing combination
         let (doublets, open_three) =
-            Self::count_open_three_and_doubles(self.own_stones, free_spots);
+            Self::count_open_three_and_doubles(board_analyzed.own_stones, free_spots);
         score += open_three as f32 * 0.04;
         score += doublets as f32 * 0.01;
         let (doublets, open_three) =
-            Self::count_open_three_and_doubles(self.opponent_stones, free_spots);
+            Self::count_open_three_and_doubles(board_analyzed.opponent_stones, free_spots);
         score -= open_three as f32 * 0.04;
         score -= doublets as f32 * 0.01;
 
         // 2. board control.
-        score += Self::get_board_scoring(self.own_stones);
-        score -= Self::get_board_scoring(self.opponent_stones);
+        score += Self::get_board_scoring(board_analyzed.own_stones);
+        score -= Self::get_board_scoring(board_analyzed.opponent_stones);
 
         // We do not clamp against exactly one, so that whatever the outcome is,
         // it will always be dominated by a guaranteed win or loss.
