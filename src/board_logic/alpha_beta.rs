@@ -4,12 +4,12 @@
 //! The transposition table is enhanced by a canonical board coding and a coding that
 //! accounts for symmetry.
 
-use crate::board_logic::heuristic::compute_heuristics;
-use crate::board_logic::bit_board_coding::BOARD_WIDTH;
 use crate::board_logic::bit_board::{BitBoard, SymmetryIndependentPosition};
+use crate::board_logic::bit_board_coding::BOARD_WIDTH;
 use crate::board_logic::bit_board_coding::{FULL_BOARD_MASK, check_for_winning};
-use std::collections::HashMap;
+use crate::board_logic::heuristic::compute_heuristics;
 use crate::debug_check_board_coordinates;
+use std::collections::HashMap;
 
 /// The search depth we want to apply.
 const SEARCH_DEPTH: u32 = 15;
@@ -18,7 +18,7 @@ const SEARCH_DEPTH: u32 = 15;
 const MAX_SCORE: f32 = 1.0;
 
 /// This score is lower than any of the others, we use it as an initialization to check to build the maximum.
-const SCORE_GUARD: f32 = - 1.1;
+const SCORE_GUARD: f32 = -1.1;
 
 /// The discount factor to favour fast wins and late losses.
 /// This should be extremely close to 1 because it interferes negatively with the
@@ -27,9 +27,10 @@ const DISCOUNT_FACTOR: f32 = 0.99999;
 
 /// The region we want to clamp the heuristics against, that it
 /// can never dominate even overdiscounted win / loss.
-const CLAMP_GUARD_HEURISTIC : f32 = 0.97;
+const CLAMP_GUARD_HEURISTIC: f32 = 0.97;
 
-/// Contains a bit-board and a hashmap.
+/// Contains a bit-board and two hashmaps. One for the current move and one recycled
+/// from the previous one.
 pub struct AlphaBeta {
     /// The bit board we play with.
     bit_board: BitBoard,
@@ -132,7 +133,6 @@ impl AlphaBeta {
             test_board.own_stones ^= coded_move;
         }
 
-
         // Do the inverse sort (descending order.).
         local_sorter.sort_by(|first, second| second.evaluation.total_cmp(&first.evaluation));
 
@@ -211,12 +211,8 @@ impl AlphaBeta {
             // Apply move.
             self.bit_board.own_stones |= list_entry.coded_move;
             self.bit_board.swap_players();
-            let (new_result, _) = self.evaluate_next_move(
-                -beta,
-                -alpha,
-                -list_entry.evaluation,
-                depth + 1
-            );
+            let (new_result, _) =
+                self.evaluate_next_move(-beta, -alpha, -list_entry.evaluation, depth + 1);
             self.bit_board.swap_players();
             self.bit_board.own_stones ^= list_entry.coded_move;
 

@@ -1,5 +1,5 @@
-//! This module shows the game over part with the winning situation and a button to return
-//! to the player selection screen.
+//! This module shows the game over part with the winning situation and an additional indicator.
+//! On mouse interaction we transfer to the player selection screen.
 
 use crate::board_logic::bit_board::GameResult;
 use crate::render_system::graphics::{Color, GraphicsPainter};
@@ -43,7 +43,7 @@ impl StateGameOver {
 }
 
 impl GameState for StateGameOver {
-    /// On enter er extract the information of why the game is over and eventually highlighted stones.
+    /// On enter we extract the information of why the game is over and eventually highlighted stones.
     fn enter(&mut self, black_board: &Blackboard) {
         let (state, list) = black_board.game_board.get_winning_status_for_rendering();
         assert_ne!(
@@ -76,7 +76,7 @@ impl GameState for StateGameOver {
     fn draw(&self, graphics: &GraphicsPainter, black_board: &Blackboard) {
         graphics.render_board(&black_board.game_board);
 
-        // The button.
+        // The indicator.
         graphics.draw_rectangle_normal(LOWER_POSITION_OUTER, UPPER_POSITION_OUTER, Color::DarkGrey);
         graphics.draw_rectangle_normal(LOWER_POSITION_INNER, UPPER_POSITION_INNER, Color::Grey);
         // Eventually the highlighted stones and button inset.

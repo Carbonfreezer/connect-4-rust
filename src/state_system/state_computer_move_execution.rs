@@ -4,12 +4,13 @@ use crate::render_system::graphics::GraphicsPainter;
 use crate::render_system::stone_animator::StoneAnimator;
 use crate::state_system::game_state::{Blackboard, GameState, GameStateIndex};
 
+/// We remember the chosen slot to make the move permanent at the end of the animation
+/// and have an animator to show it.
 pub struct StateComputerMoveExecution {
     slot_picked: u32,
     animator: StoneAnimator,
 }
 
-/// Simply draws the dropping stone and then decides whether to go for game over or player choice.
 impl StateComputerMoveExecution {
     pub(crate) fn new() -> StateComputerMoveExecution {
         StateComputerMoveExecution {
@@ -20,15 +21,15 @@ impl StateComputerMoveExecution {
 }
 
 impl GameState for StateComputerMoveExecution {
-    /// We read out the move we want to make.
+    /// We read out the move we want to make and initialize the animation.
     fn enter(&mut self, black_board: &Blackboard) {
         self.slot_picked = black_board.computer_choice;
         self.animator
             .start_animating(&black_board.game_board, self.slot_picked, true);
     }
 
-    /// We wait for the end of the animation, See if game is over and transfer to the next states accordingly,
-    /// if the game has handed or the player can make his choice.
+    /// We wait for the end of the animation, See if game is over and transfer to the next states accordingly
+    /// (end of game or players choice).
     fn update(&mut self, delta_time: f32, black_board: &mut Blackboard) -> Option<GameStateIndex> {
         if self.animator.is_animating() {
             self.animator.update(delta_time);

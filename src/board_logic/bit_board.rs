@@ -1,8 +1,8 @@
 //! This module contains the game board represented as a bit board.
 
 use crate::board_logic::bit_board_coding::{
-    BOARD_HEIGHT, BOARD_WIDTH, FULL_BOARD_MASK, check_for_winning, 
-    get_all_possible_moves, get_bit_representation, get_winning_board,
+    BOARD_HEIGHT, BOARD_WIDTH, FULL_BOARD_MASK, check_for_winning, get_all_possible_moves,
+    get_bit_representation, get_winning_board,
 };
 use crate::board_logic::bit_board_coding::{flip_board, get_position_iterator, get_possible_move};
 use crate::debug_check_board_coordinates;
@@ -28,9 +28,8 @@ pub struct BitBoard {
     computer_first: bool,
 }
 
-/// This is the symmetry independent coding that can be used for the transposition table.
-/// Has a representation for own and opponent stones. This structure is meant has a key into the 
-/// hash map.
+/// This is the symmetry independent coding that can be used for hash keys in the transposition table.
+/// It has a representation for own and opponent stones.
 #[derive(Hash, PartialEq, Eq, Clone)]
 pub struct SymmetryIndependentPosition {
     pub own: u64,
@@ -206,6 +205,4 @@ impl BitBoard {
             (GameResult::Pending, None)
         }
     }
-
-   
 }

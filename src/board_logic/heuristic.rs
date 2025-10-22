@@ -3,7 +3,9 @@
 //! whether dead or not and a board scoring that favours positions close to the central column.
 
 use crate::board_logic::bit_board::BitBoard;
-use crate::board_logic::bit_board_coding::{clip_shift, get_column_mask, DIR_INCREMENT, FULL_BOARD_MASK};
+use crate::board_logic::bit_board_coding::{
+    DIR_INCREMENT, FULL_BOARD_MASK, clip_shift, get_column_mask,
+};
 
 /// Returns the number doublets and open triplets we have.
 fn count_open_three_and_doubles(board: u64, free_spots: u64) -> (u32, u32) {
@@ -44,13 +46,14 @@ fn get_board_scoring(board: u64) -> f32 {
 }
 
 /// Does the complete heuristic evaluation of the game board.
-pub fn compute_heuristics(board_analyzed: &BitBoard,  clamp_guard : f32) -> f32 {
+pub fn compute_heuristics(board_analyzed: &BitBoard, clamp_guard: f32) -> f32 {
     debug_assert!(
         !board_analyzed.is_game_over(),
         "The game over state should have already been prechecked."
     );
 
-    let free_spots = !(board_analyzed.opponent_stones | board_analyzed.own_stones) & FULL_BOARD_MASK;
+    let free_spots =
+        !(board_analyzed.opponent_stones | board_analyzed.own_stones) & FULL_BOARD_MASK;
     let mut score = 0.0;
 
     // 1. Pairing combination
