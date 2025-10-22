@@ -12,7 +12,7 @@ use std::collections::HashMap;
 use crate::debug_check_board_coordinates;
 
 /// The search depth we want to apply.
-const SEARCH_DEPTH: u32 = 12;
+const SEARCH_DEPTH: u32 = 15;
 
 /// We clamp values to the region of 1: guaranteed winn to -1: guaranteed loss.
 const MAX_SCORE: f32 = 1.0;
