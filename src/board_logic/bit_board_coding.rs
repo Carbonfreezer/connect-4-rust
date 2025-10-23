@@ -119,7 +119,6 @@ pub fn clip_shift_inverse(input: u64, amount: u8) -> u64 {
     (input >> amount) & FULL_BOARD_MASK
 }
 
-
 /// Gets a  representation, where the bit for the specific column is set where a move would wind up.
 /// If it is not possible to make move in that column, a 0 is returned.
 pub fn get_possible_move(board: u64, column: u32) -> u64 {
@@ -189,16 +188,4 @@ pub fn get_all_possible_moves(board: u64) -> impl Iterator<Item = (u64, u32)> {
     (0..7)
         .map(move |x| (comb & COLUMN_MASK[x], x as u32))
         .filter(|&x| x.0 != 0)
-}
-
-
-/// Helper function to debug log a board on std out.
-pub fn debug_log_board(board: u64) {
-    for height in (0..BOARD_HEIGHT).rev() {
-        for width in 0..BOARD_WIDTH {
-            let pit_pos :u64 = 1 << (width + 8 * height);
-            if (board & pit_pos) != 0 { print!("X") } else { print!("-") }
-        }
-        println!();
-    }
 }

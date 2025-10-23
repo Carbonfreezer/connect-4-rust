@@ -3,10 +3,12 @@
 //! whether dead or not and a board scoring that favours positions close to the central column.
 
 use crate::board_logic::bit_board::BitBoard;
-use crate::board_logic::bit_board_coding::{DIR_INCREMENT, FULL_BOARD_MASK, clip_shift, get_column_mask, clip_shift_inverse, debug_log_board, BOARD_WIDTH, BOARD_HEIGHT, get_bit_representation};
+use crate::board_logic::bit_board_coding::{
+    DIR_INCREMENT, FULL_BOARD_MASK, clip_shift, clip_shift_inverse, get_bit_representation,
+};
 
 /// Returns the number of open triplets we have.
-fn count_open_three_and_doubles(board: u64, free_spots: u64) -> u32 {
+fn count_open_three(board: u64, free_spots: u64) -> u32 {
     let mut triplets = 0;
 
     for bit_shift in DIR_INCREMENT {
@@ -22,27 +24,29 @@ fn count_open_three_and_doubles(board: u64, free_spots: u64) -> u32 {
         triplets += spot_right.count_ones();
 
         // X_XX pattern
-        let free_left_match = clip_shift_inverse(clip_shift_inverse(double_pos, bit_shift), bit_shift) & free_spots;
+        let free_left_match =
+            clip_shift_inverse(clip_shift_inverse(double_pos, bit_shift), bit_shift) & free_spots;
         let spot_left = clip_shift_inverse(free_left_match, bit_shift) & board;
         triplets += spot_left.count_ones();
 
         // _XXX Pattern
-        let triplets_before = clip_shift_inverse(clip_shift_inverse(clip_shift_inverse(dd, bit_shift), bit_shift),bit_shift) & free_spots;
+        let triplets_before = clip_shift_inverse(
+            clip_shift_inverse(clip_shift_inverse(dd, bit_shift), bit_shift),
+            bit_shift,
+        ) & free_spots;
         triplets += triplets_before.count_ones();
     }
 
     triplets
 }
 
-
-
 /// This function turns standard values from the literature into representations
 /// that scale with our internal structure.
 const fn make_adjusted_value() -> [f32; 12] {
     // This is a standard value table we find in the literature.
-    let mut local : [f32; 12] = [3.0,4.0,5.0,7.0,
-                            4.0, 6.0, 8.0, 10.0,
-                            5.0, 8.0, 11.0, 13.0];
+    let mut local: [f32; 12] = [
+        3.0, 4.0, 5.0, 7.0, 4.0, 6.0, 8.0, 10.0, 5.0, 8.0, 11.0, 13.0,
+    ];
 
     let mut i = 0;
     while i < 12 {
@@ -52,18 +56,18 @@ const fn make_adjusted_value() -> [f32; 12] {
     local
 }
 
-
 /// This generates the bit mask to be able to read out the value table from above.
 const fn make_value_bitmask() -> [u64; 12] {
-    let mut mask : [u64; 12] =  [0;12];
+    let mut mask: [u64; 12] = [0; 12];
     let mut y_scan = 0;
     while y_scan < 3 {
         let mut x_scan = 0;
         while x_scan < 4 {
-            mask[((3 - x_scan) + 4 * (2 - y_scan)) as usize] = get_bit_representation(3 - x_scan, 2 - y_scan) |
-                get_bit_representation(3 + x_scan, 2 - y_scan) |
-                get_bit_representation(3 - x_scan, 3 + y_scan) |
-                get_bit_representation(3 + x_scan, 3 + y_scan);
+            mask[((3 - x_scan) + 4 * (2 - y_scan)) as usize] =
+                get_bit_representation(3 - x_scan, 2 - y_scan)
+                    | get_bit_representation(3 + x_scan, 2 - y_scan)
+                    | get_bit_representation(3 - x_scan, 3 + y_scan)
+                    | get_bit_representation(3 + x_scan, 3 + y_scan);
             x_scan += 1;
         }
         y_scan += 1;
@@ -72,15 +76,13 @@ const fn make_value_bitmask() -> [u64; 12] {
 }
 
 /// This contains the values for the different board positions.
-const BOARD_POSITION_CODING_VALUE : [f32; 12] =  make_adjusted_value() ;
+const BOARD_POSITION_CODING_VALUE: [f32; 12] = make_adjusted_value();
 
 /// This is the bit masking to index the value mask.
-const VALUE_POSITION_BITMASK : [u64; 12] = make_value_bitmask();
+const VALUE_POSITION_BITMASK: [u64; 12] = make_value_bitmask();
 
-
-
-/// Counts the amount of stones, that are on the centerline, one line away from the center line
-/// and two lines away from the center line and multiplies it with a scoring and adds it up.
+/// Evaluates the stones by their position on the board. Gives center stones a higher
+/// value, because they can generate more possibilities in the future. 
 fn get_board_scoring(board: u64) -> f32 {
     let mut score = 0.0;
 
@@ -99,18 +101,14 @@ pub fn compute_heuristics(board_analyzed: &BitBoard, clamp_guard: f32) -> f32 {
         "The game over state should have already been prechecked."
     );
 
-    
-
     let free_spots =
         !(board_analyzed.opponent_stones | board_analyzed.own_stones) & FULL_BOARD_MASK;
     let mut score = 0.0;
 
     // 1. Pairing combination
-    let own_triplets =
-        count_open_three_and_doubles(board_analyzed.own_stones, free_spots);
+    let own_triplets = count_open_three(board_analyzed.own_stones, free_spots);
     score += own_triplets as f32 * 0.04;
-    let opp_triplets =
-        count_open_three_and_doubles(board_analyzed.opponent_stones, free_spots);
+    let opp_triplets = count_open_three(board_analyzed.opponent_stones, free_spots);
     score -= opp_triplets as f32 * 0.04;
 
     // 2. board control.
