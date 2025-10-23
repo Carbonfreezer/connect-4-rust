@@ -1,5 +1,8 @@
-//! Program is an adaption of the 4 Connect game. It features an alpha-beta pruned negamax algorithm
+//! Program is an adaption of the Four Connect game. It features an alpha-beta pruned negamax algorithm
 //! with transposition tables and a thread based asynchronous user interface.
+//! 
+#![doc(html_logo_url = "https://www.rust-lang.org/logos/rust-logo-128x128.png")]
+#![doc(html_favicon_url = "https://www.rust-lang.org/favicon.ico")]
 
 mod state_system;
 
