@@ -35,32 +35,61 @@ fn count_open_three_and_doubles(board: u64, free_spots: u64) -> u32 {
 }
 
 
-const BOARD_POSITION_CODING_ORIGINAL : [f32; 42] = [3.0,4.0,5.0,7.0,5.0,4.0,3.0,
-                                                    4.0, 6.0, 8.0, 10.0, 8.0,6.0, 4.0,
-                                                    5.0, 8.0, 11.0, 13.0,11.0, 8.0, 5.0,
-                                                    5.0, 8.0, 11.0, 13.0,11.0, 8.0, 5.0,
-                                                    4.0, 6.0, 8.0, 10.0, 8.0,6.0, 4.0,
-                                                    3.0,4.0,5.0,7.0,5.0,4.0,3.0,
-            ];
 
-/// Masking central column, the two columns beside the central and one pair even one further out.
-const BOARD_EVALUATION_MASK: [u64; 3] = [
-    get_column_mask(3),
-    get_column_mask(2) | get_column_mask(4),
-    get_column_mask(1) | get_column_mask(5),
-];
+/// This function turns standard values from the literature into representations
+/// that scale with our internal structure.
+const fn make_adjusted_value() -> [f32; 12] {
+    // This is a standard value table we find in the literature.
+    let mut local : [f32; 12] = [3.0,4.0,5.0,7.0,
+                            4.0, 6.0, 8.0, 10.0,
+                            5.0, 8.0, 11.0, 13.0];
+
+    let mut i = 0;
+    while i < 12 {
+        local[i] *= (local[i] - 3.0) * 0.001;
+        i += 1;
+    }
+    local
+}
+
+
+/// This generates the bit mask to be able to read out the value table from above.
+const fn make_value_bitmask() -> [u64; 12] {
+    let mut mask : [u64; 12] =  [0;12];
+    let mut y_scan = 0;
+    while y_scan < 3 {
+        let mut x_scan = 0;
+        while x_scan < 4 {
+            mask[((3 - x_scan) + 4 * (2 - y_scan)) as usize] = get_bit_representation(3 - x_scan, 2 - y_scan) |
+                get_bit_representation(3 + x_scan, 2 - y_scan) |
+                get_bit_representation(3 - x_scan, 3 + y_scan) |
+                get_bit_representation(3 + x_scan, 3 + y_scan);
+            x_scan += 1;
+        }
+        y_scan += 1;
+    }
+    mask
+}
+
+/// This contains the values for the different board positions.
+const BOARD_POSITION_CODING_VALUE : [f32; 12] =  make_adjusted_value() ;
+
+/// This is the bit masking to index the value mask.
+const VALUE_POSITION_BITMASK : [u64; 12] = make_value_bitmask();
+
+
 
 /// Counts the amount of stones, that are on the centerline, one line away from the center line
 /// and two lines away from the center line and multiplies it with a scoring and adds it up.
 fn get_board_scoring(board: u64) -> f32 {
     let mut score = 0.0;
-    for x in 0..BOARD_WIDTH {
-        for y in 0..BOARD_HEIGHT {
-            if (get_bit_representation(x,y) & board != 0) {score += BOARD_POSITION_CODING_ORIGINAL[(x + y * 7) as usize];}
-        }
+
+    for i in 0..12 {
+        let pos_ind = (board & VALUE_POSITION_BITMASK[i]).count_ones();
+        score += BOARD_POSITION_CODING_VALUE[i] * pos_ind as f32;
     }
 
-    score * 0.001
+    score
 }
 
 /// Does the complete heuristic evaluation of the game board.
@@ -69,6 +98,8 @@ pub fn compute_heuristics(board_analyzed: &BitBoard, clamp_guard: f32) -> f32 {
         !board_analyzed.is_game_over(),
         "The game over state should have already been prechecked."
     );
+
+    
 
     let free_spots =
         !(board_analyzed.opponent_stones | board_analyzed.own_stones) & FULL_BOARD_MASK;
