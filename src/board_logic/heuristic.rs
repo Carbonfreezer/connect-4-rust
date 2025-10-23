@@ -84,7 +84,7 @@ const BOARD_POSITION_CODING_VALUE: [f32; 12] = make_adjusted_value();
 const VALUE_POSITION_BITMASK: [u64; 12] = make_value_bitmask();
 
 /// Evaluates the stones by their position on the board. Gives center stones a higher
-/// value, because they can generate more possibilities in the future. 
+/// value, because they can generate more possibilities in the future.
 fn get_board_scoring(board: u64) -> f32 {
     let mut score = 0.0;
 
