@@ -43,14 +43,16 @@ fn count_open_three(board: u64, free_spots: u64) -> u32 {
 /// This function turns standard values from the literature into representations
 /// that scale with our internal structure.
 const fn make_adjusted_value() -> [f32; 12] {
-    // This is a standard value table we find in the literature.
+    #[rustfmt::skip]
     let mut local: [f32; 12] = [
-        3.0, 4.0, 5.0, 7.0, 4.0, 6.0, 8.0, 10.0, 5.0, 8.0, 11.0, 13.0,
+        0.0, 1.0, 3.0, 6.0, 
+        0.5, 2.0, 6.0, 8.0, 
+        1.5, 3.0, 8.0, 10.0,
     ];
 
     let mut i = 0;
     while i < 12 {
-        local[i] *= (local[i] - 3.0) * 0.001;
+        local[i] *= local[i] * 0.001;
         i += 1;
     }
     local
