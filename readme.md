@@ -82,8 +82,7 @@ The old transposition table, while not perfectly accurate for the current search
 ### Heuristic Evaluation
 The `heuristic` module implements a lightweight position evaluator that balances accuracy with computational efficiency. It considers:
 - Open three-in-a-row patterns (potential threats)
-- Two-in-a-row combinations
-- Control of center columns (strategically valuable)
+- Stone positions around the center (strategically valuable)
 
 The heuristic is designed to be fast enough for evaluating thousands of positions per second while providing sufficient guidance for move ordering.
 
