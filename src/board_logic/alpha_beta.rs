@@ -90,7 +90,9 @@ impl AlphaBeta {
             if check_for_winning(test_board.own_stones) {
                 local_max = MAX_SCORE;
                 local_move = Some(slot);
-            } else if (test_board.own_stones | test_board.opponent_stones) == FULL_BOARD_MASK {
+            } else if ((test_board.own_stones | test_board.opponent_stones) == FULL_BOARD_MASK)
+                && (local_max < 0.0)
+            {
                 local_max = 0.0;
                 local_move = Some(slot);
             }
