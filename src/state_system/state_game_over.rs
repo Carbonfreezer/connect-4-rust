@@ -1,4 +1,4 @@
-//! This module shows the game over part with the winning situation and an additional indicator.
+//! This module shows the game over part with the winning situation and an additional text.
 //! On mouse interaction we transfer to the player selection screen.
 
 use crate::board_logic::bit_board::GameResult;

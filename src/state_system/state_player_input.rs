@@ -1,7 +1,6 @@
 //! The player input state administrates the players choice, checks for feasibility and it it would
-//! result in an game over it also executes the falling stone animation. Otherwise it
-//! transfers directly over to the computer calculation state, which kicks off the calculation
-//! while the stone is still falling down.
+//! result in an game over it also executes the falling stone animation. If this is not the end of
+//! the game, the computer move calculation is kicked off, before the animations starts.
 
 use crate::board_logic::bit_board_coding::BOARD_WIDTH;
 use crate::render_system::graphics::{WINDOW_DIMENSION, render_board};

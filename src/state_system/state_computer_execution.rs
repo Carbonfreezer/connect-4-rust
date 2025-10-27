@@ -1,6 +1,5 @@
-//! In this state the real computation happens, and also the player animation is executed to
-//! cover up some calculation time. The calculation happens asynchronously in a separate
-//! working thread.
+//! In this state we are awaiting the computation result, that has been kicked off in the
+//! player input state and perform the dropping stone animation. 
 
 use crate::render_system::graphics::render_board;
 use crate::render_system::stone_animator::StoneAnimator;

@@ -1,5 +1,5 @@
 //! Contains the state to administrate the start screen, where the player selects, who will start
-//! the game.
+//! the game. When the computer starts the first calculation is kicked off.
 
 use crate::game_state::{Blackboard, GameState, GameStateIndex};
 use crate::render_system::graphics::{SymbolColor, get_color, print_text};

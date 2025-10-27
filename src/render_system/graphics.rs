@@ -112,6 +112,8 @@ pub fn print_text(text: &str, position: Vec2) {
     );
 }
 
+
+/// Creates an internal material for the offscreen texture of the game board.
 fn create_cutout_material() -> Material {
     let vertex_shader = r#"#version 100
     attribute vec3 position;
