@@ -21,6 +21,8 @@ pub enum SymbolColor {
     LightBlue,
 }
 
+
+/// Static array with colors that can be queried.
 const COLOR_ARRAY: [Color; 5] = [
     Color::new(0.48, 0.25, 0.0, 1.0),
     Color::new(0.75, 0.55, 0.06, 1.0),
@@ -96,6 +98,8 @@ pub fn draw_stone_at_coordinates(position: Vec2, is_first_player: bool) {
     draw_circle(position.x, position.y, CIRCLE_RADIUS, *color);
 }
 
+
+/// A standardized way on how to write text in the game.
 pub fn print_text(text: &str, position: Vec2) {
     draw_text_ex(
         text,
@@ -114,27 +118,20 @@ pub fn print_text(text: &str, position: Vec2) {
 
 
 /// Creates an internal material for the offscreen texture of the game board.
+/// Simply paints black with an alpha of zero and replaces the content.
 fn create_cutout_material() -> Material {
     let vertex_shader = r#"#version 100
     attribute vec3 position;
-    attribute vec2 texcoord;
-    attribute vec4 color0;
-
-    varying lowp vec2 uv;
-    varying lowp vec4 color;
 
     uniform mat4 Model;
     uniform mat4 Projection;
 
     void main() {
         gl_Position = Projection * Model * vec4(position, 1);
-        color = color0 / 255.0;
-        uv = texcoord;
     }
     "#;
 
     let fragment_shader = r#"#version 100
-    precision lowp float;
 
     void main() {
         gl_FragColor = vec4(0.0, 0.0, 0.0, 0.0);
@@ -161,7 +158,7 @@ fn create_cutout_material() -> Material {
     .unwrap()
 }
 
-/// Creates the board texture with holes,
+/// Creates the board texture with holes. Is done once and can then be reused for the remainder of the game.
 pub fn create_board_texture() -> Texture2D {
     let board_height = WINDOW_DIMENSION * (6.0 / 7.0);
     let render_target = render_target(WINDOW_DIMENSION as u32, board_height as u32);

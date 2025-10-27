@@ -35,7 +35,7 @@ pub struct Blackboard {
     pub game_board: BitBoard,
     /// The ai handler for the threaded Ai.
     pub ai_system: AiHandler,
-    /// The board texture we use.
+    /// The pre-computed board texture with holes.
     pub board_texture: Texture2D,
 }
 
