@@ -6,11 +6,12 @@ use crate::board_logic::alpha_beta::AlphaBeta;
 use crate::board_logic::bit_board::BitBoard;
 use crate::board_logic::bit_board_coding::BOARD_WIDTH;
 use crate::debug_check_board_coordinates;
-use crate::render_system::graphics::GraphicsPainter;
 use crate::render_system::stone_animator::StoneAnimator;
 use crate::state_system::game_state::{Blackboard, GameState, GameStateIndex};
 use std::sync::mpsc;
 use std::thread;
+use macroquad::math::Vec2;
+use crate::render_system::graphics::render_board;
 
 pub struct StateComputerCalculation {
     animator: StoneAnimator,
@@ -79,16 +80,16 @@ impl GameState for StateComputerCalculation {
     }
 
     /// We do not process mouse clicks here.
-    fn mouse_click(&mut self, _: [f32; 2]) {
+    fn mouse_click(&mut self, _: Vec2) {
         // Nothing to do here.
     }
 
     /// Draws the board and eventually the falling stone.
-    fn draw(&self, graphics: &GraphicsPainter, black_board: &Blackboard) {
+    fn draw(&self, black_board: &Blackboard) {
         if self.animator.is_animating() {
-            self.animator.draw(graphics);
+            self.animator.draw();
         }
 
-        graphics.render_board(&black_board.game_board);
+        render_board(&black_board.game_board, &black_board.board_texture);
     }
 }

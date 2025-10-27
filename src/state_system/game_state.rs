@@ -1,8 +1,9 @@
 //! This module contains the trait of all states and contains a blackboard,
 //! over which states can exchange information.
 
+use macroquad::math::Vec2;
+use macroquad::prelude::Texture2D;
 use crate::board_logic::bit_board::BitBoard;
-use crate::render_system::graphics::GraphicsPainter;
 use crate::state_computer_move_execution::StateComputerMoveExecution;
 use crate::state_game_over::StateGameOver;
 use crate::state_player_start_selection::StatePlayerStartSelection;
@@ -38,18 +39,22 @@ pub struct Blackboard {
     pub computer_choice: u32,
     /// Here comes the choice of the player.
     pub player_choice: u32,
+    /// The board texture we use.
+    pub board_texture: Texture2D,
 }
 
 impl Blackboard {
-    pub fn new() -> Blackboard {
+    pub fn new(texture : Texture2D) -> Blackboard {
         Blackboard {
             game_board: BitBoard::new(),
             computer_choice: 0,
             player_choice: 0,
+            board_texture: texture,
         }
     }
 }
 
+/// A general interface for a game state, to administrate the different phases we can be in.
 /// A general interface for a game state, to administrate the different phases we can be in.
 pub trait GameState {
     /// Performs initialization when entering the game state. Data may be read out from the blackboard here.
@@ -63,9 +68,9 @@ pub trait GameState {
     /// The blackboard is not handed over intentionally. Mouse interaction information
     /// should be stored in struct and processed in the update method. We have done this to avoid
     /// common state confusion errors.
-    fn mouse_click(&mut self, position: [f32; 2]);
+    fn mouse_click(&mut self, position: Vec2);
 
-    /// The rendering of the screen, requests a graphic painter to do so. It may read information
+    /// The rendering of the screen, it may read information
     /// from the black-board.
-    fn draw(&self, graphics: &GraphicsPainter, black_board: &Blackboard);
+    fn draw(&self, black_board: &Blackboard);
 }

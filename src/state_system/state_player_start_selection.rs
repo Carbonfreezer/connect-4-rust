@@ -2,7 +2,8 @@
 //! the game.
 
 use crate::game_state::{Blackboard, GameState, GameStateIndex};
-use crate::render_system::graphics::{Color, GraphicsPainter};
+use crate::render_system::graphics::{SymbolColor, get_color, print_text};
+use macroquad::prelude::*;
 
 pub struct StatePlayerStartSelection {
     position_selected: u8,
@@ -21,21 +22,15 @@ impl StatePlayerStartSelection {
 }
 
 /// The position where the left element should be drawn-
-const LEFT_CENTER: [f32; 2] = [-0.5, 0.0];
+const LEFT_CENTER: Vec2 = Vec2{x : 175.0, y : 350.0};
 /// The position where the right element should be drawn.
-const RIGHT_CENTER: [f32; 2] = [0.5, 0.0];
+const RIGHT_CENTER: Vec2 = Vec2{x : 525.0, y : 350.0};
 /// The radius of the button.
-const RADIUS: f32 = 0.3;
+const RADIUS: f32 = 100.0;
 /// The highlight time for the button.
 const HIGHLIGHT_TIME: f32 = 0.25;
 
-/// Computes the euclidean distance between points.
-fn get_distance_between(first_point: [f32; 2], second_point: [f32; 2]) -> f32 {
-    let x = second_point[0] - first_point[0];
-    let y = second_point[1] - first_point[1];
 
-    (x * x + y * y).sqrt()
-}
 impl GameState for StatePlayerStartSelection {
     fn enter(&mut self, _: &Blackboard) {
         self.selection_happened = false;
@@ -67,34 +62,40 @@ impl GameState for StatePlayerStartSelection {
 
     /// Mouse click detects the potential onto one of the buttons and eventually sets
     /// the information in the state.
-    fn mouse_click(&mut self, position: [f32; 2]) {
+    fn mouse_click(&mut self, position: Vec2) {
         if self.selection_happened {
             return;
         }
 
-        if get_distance_between(LEFT_CENTER, position) < RADIUS {
+        if LEFT_CENTER.distance(position) < RADIUS {
             self.selection_happened = true;
             self.position_selected = 0;
         }
 
-        if get_distance_between(RIGHT_CENTER, position) < RADIUS {
+        if RIGHT_CENTER.distance(position) < RADIUS {
             self.selection_happened = true;
             self.position_selected = 1;
         }
     }
 
     /// Simply renders the two buttons, eventually highlighted when just selected.
-    fn draw(&self, graphics: &GraphicsPainter, _: &Blackboard) {
+    fn draw(&self,  _: &Blackboard) {
+
+        print_text("Welcome to Connect Four", Vec2::new(100.0, 575.0));
         if self.selection_happened && (self.position_selected == 0) {
-            graphics.draw_circle_normal(RADIUS, LEFT_CENTER, Color::LightYellow);
+            draw_poly(LEFT_CENTER.x, LEFT_CENTER.y,200,  RADIUS, 0.0,  *get_color( SymbolColor::LightYellow));
         } else {
-            graphics.draw_circle_normal(RADIUS, LEFT_CENTER, Color::Yellow);
+            draw_poly(LEFT_CENTER.x, LEFT_CENTER.y, 200,  RADIUS, 0.0,  *get_color( SymbolColor::Yellow));
         }
 
+        print_text("I start", LEFT_CENTER - Vec2{x: RADIUS, y: 1.6 * RADIUS});
+
         if self.selection_happened && (self.position_selected == 1) {
-            graphics.draw_circle_normal(RADIUS, RIGHT_CENTER, Color::LightBlue);
+            draw_poly(RIGHT_CENTER.x, RIGHT_CENTER.y, 200,  RADIUS, 0.0, *get_color( SymbolColor::LightBlue));
         } else {
-            graphics.draw_circle_normal(RADIUS, RIGHT_CENTER, Color::Blue);
+            draw_poly(RIGHT_CENTER.x, RIGHT_CENTER.y, 200, RADIUS, 0.0,  *get_color( SymbolColor::Blue));
         }
+
+        print_text("You start", RIGHT_CENTER - Vec2{x: RADIUS, y: 1.6 * RADIUS});
     }
 }

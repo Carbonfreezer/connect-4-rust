@@ -1,7 +1,12 @@
 [package]
 name = "connect-4-rust"
-version = "0.4.0"
+version = "0.5.0"
 edition = "2024"
 
 [dependencies]
-glume = "0.7.2"
+macroquad = "0.4.14"
+
+# Profile for profiling
+[profile.profiling]
+inherits = "release"
+debug = true

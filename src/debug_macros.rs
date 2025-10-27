@@ -1,26 +1,5 @@
 //! Here we collect a couple of custom debug macros.
 
-/// Macro to check if the coordinates are in the -1..1 range.
-/// And checks, that it is a 2d float vector.
-///
-/// # Example
-/// ```
-/// let x : [f32;2] = [-0.1, 0.2];
-/// debug_check_draw_coordinates!(x);
-/// ```
-#[macro_export]
-macro_rules! debug_check_draw_coordinates {
-    ($coord:expr) => {
-        // Forces f32 slice at compile time.
-        let [x, y]: [f32; 2] = $coord;
-        debug_assert!(
-            (-1.0..=1.0).contains(&x) && (-1.0..=1.0).contains(&y),
-            "Illegal coordinates: x={}, y={} must be between -1.0 and 1.0",
-            x,
-            y,
-        );
-    };
-}
 
 /// Verifier macros for coordinates, can be used with x and y coordinates for a position, or a
 /// column only. Checks for the type to be usize and if they do not exceed the desired range,

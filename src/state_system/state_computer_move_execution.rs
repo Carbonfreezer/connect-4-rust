@@ -1,6 +1,7 @@
 //! This state simply executes a prestored decision and shows the animation.
 
-use crate::render_system::graphics::GraphicsPainter;
+use macroquad::math::Vec2;
+use crate::render_system::graphics::{render_board};
 use crate::render_system::stone_animator::StoneAnimator;
 use crate::state_system::game_state::{Blackboard, GameState, GameStateIndex};
 
@@ -47,13 +48,13 @@ impl GameState for StateComputerMoveExecution {
     }
 
     /// No mouse input is processed in this state.
-    fn mouse_click(&mut self, _: [f32; 2]) {
+    fn mouse_click(&mut self, _: Vec2) {
         // No input required.
     }
 
     /// Draw the board with the falling stone.
-    fn draw(&self, graphics: &GraphicsPainter, black_board: &Blackboard) {
-        self.animator.draw(graphics);
-        graphics.render_board(&black_board.game_board);
+    fn draw(&self,  black_board: &Blackboard) {
+        self.animator.draw();
+        render_board(&black_board.game_board, &black_board.board_texture);
     }
 }

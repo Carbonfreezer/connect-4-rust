@@ -3,8 +3,9 @@
 //! transfers directly over to the computer calculation state, which kicks off the calculation
 //! while the stone is still falling down.
 
+use macroquad::math::Vec2;
 use crate::board_logic::bit_board_coding::BOARD_WIDTH;
-use crate::render_system::graphics::GraphicsPainter;
+use crate::render_system::graphics::{render_board, WINDOW_DIMENSION};
 use crate::render_system::stone_animator::StoneAnimator;
 use crate::state_system::game_state::{Blackboard, GameState, GameStateIndex};
 
@@ -70,19 +71,19 @@ impl GameState for StatePlayerInput {
     }
 
     /// Picks the slot, that was chosen by the player.
-    fn mouse_click(&mut self, position: [f32; 2]) {
+    fn mouse_click(&mut self, position: Vec2) {
         if self.slot_picked.is_some() {
             return;
         }
-        let slot = ((position[0] + 1.0) * BOARD_WIDTH as f32 / 2.0) as u32;
+        let slot = (position.x / WINDOW_DIMENSION * BOARD_WIDTH as f32)  as u32;
         self.slot_picked = Some(slot);
     }
 
     /// Draws the board and eventually the falling stone.
-    fn draw(&self, graphics: &GraphicsPainter, black_board: &Blackboard) {
+    fn draw(&self, black_board: &Blackboard) {
         if self.animator.is_animating() {
-            self.animator.draw(graphics);
+            self.animator.draw();
         }
-        graphics.render_board(&black_board.game_board);
+        render_board(&black_board.game_board, &black_board.board_texture);
     }
 }

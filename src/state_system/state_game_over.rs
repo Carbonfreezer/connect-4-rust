@@ -1,8 +1,9 @@
 //! This module shows the game over part with the winning situation and an additional indicator.
 //! On mouse interaction we transfer to the player selection screen.
 
+use macroquad::math::Vec2;
 use crate::board_logic::bit_board::GameResult;
-use crate::render_system::graphics::{Color, GraphicsPainter};
+use crate::render_system::graphics::{render_board, print_text, render_winning_stones};
 use crate::state_system::game_state::{Blackboard, GameState, GameStateIndex};
 
 pub struct StateGameOver {
@@ -11,26 +12,7 @@ pub struct StateGameOver {
     exit_pressed: bool,
 }
 
-const CENTRAL_POSITION: [f32; 2] = GraphicsPainter::get_drawing_coordinates_above_column(3);
-const LOWER_POSITION_OUTER: [f32; 2] = [
-    CENTRAL_POSITION[0] - GraphicsPainter::CIRCLE_RADIUS,
-    CENTRAL_POSITION[1] - GraphicsPainter::CIRCLE_RADIUS,
-];
-
-const UPPER_POSITION_OUTER: [f32; 2] = [
-    CENTRAL_POSITION[0] + GraphicsPainter::CIRCLE_RADIUS,
-    CENTRAL_POSITION[1] + GraphicsPainter::CIRCLE_RADIUS,
-];
-
-const LOWER_POSITION_INNER: [f32; 2] = [
-    CENTRAL_POSITION[0] - GraphicsPainter::CIRCLE_RADIUS * 0.8,
-    CENTRAL_POSITION[1] - GraphicsPainter::CIRCLE_RADIUS * 0.8,
-];
-
-const UPPER_POSITION_INNER: [f32; 2] = [
-    CENTRAL_POSITION[0] + GraphicsPainter::CIRCLE_RADIUS * 0.8,
-    CENTRAL_POSITION[1] + GraphicsPainter::CIRCLE_RADIUS * 0.8,
-];
+const TEXT_POSITION: Vec2 =   Vec2{x:200.0, y:640.0} ;
 
 impl StateGameOver {
     pub fn new() -> StateGameOver {
@@ -67,33 +49,22 @@ impl GameState for StateGameOver {
     }
 
     /// Checks if mouse button got pressed and flags that we want to leave.
-    fn mouse_click(&mut self, _: [f32; 2]) {
+    fn mouse_click(&mut self, _: Vec2) {
         self.exit_pressed = true;
     }
 
     /// Renders the board, eventually highlighted winning stones and the game end
     /// status icon.
-    fn draw(&self, graphics: &GraphicsPainter, black_board: &Blackboard) {
-        graphics.render_board(&black_board.game_board);
+    fn draw(&self,  black_board: &Blackboard) {
+        render_board(&black_board.game_board, &black_board.board_texture);
+
 
         // The indicator.
-        graphics.draw_rectangle_normal(LOWER_POSITION_OUTER, UPPER_POSITION_OUTER, Color::DarkGrey);
-        graphics.draw_rectangle_normal(LOWER_POSITION_INNER, UPPER_POSITION_INNER, Color::Grey);
-        // Eventually the highlighted stones and button inset.
-        if self.end_result == GameResult::FirstPlayerWon {
-            graphics.render_winning_stones(true, &self.highlighted_stones);
-            graphics.draw_circle_normal(
-                GraphicsPainter::CIRCLE_RADIUS * 0.6,
-                CENTRAL_POSITION,
-                Color::LightYellow,
-            );
-        } else if self.end_result == GameResult::SecondPlayerWon {
-            graphics.render_winning_stones(false, &self.highlighted_stones);
-            graphics.draw_circle_normal(
-                GraphicsPainter::CIRCLE_RADIUS * 0.6,
-                CENTRAL_POSITION,
-                Color::LightBlue,
-            );
+        match self.end_result {
+            GameResult::Pending => {panic!("Should not be the case")},
+            GameResult::FirstPlayerWon => {print_text("Yellow has won", TEXT_POSITION);  render_winning_stones(true, &self.highlighted_stones);},
+            GameResult::SecondPlayerWon => {print_text("Blue has won", TEXT_POSITION);  render_winning_stones(false, &self.highlighted_stones);},
+            GameResult::Draw => {print_text("Draw", TEXT_POSITION)},
         }
     }
 }
