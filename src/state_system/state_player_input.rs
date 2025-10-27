@@ -3,24 +3,30 @@
 //! transfers directly over to the computer calculation state, which kicks off the calculation
 //! while the stone is still falling down.
 
-use macroquad::math::Vec2;
 use crate::board_logic::bit_board_coding::BOARD_WIDTH;
 use crate::render_system::graphics::{render_board, WINDOW_DIMENSION};
 use crate::render_system::stone_animator::StoneAnimator;
 use crate::state_system::game_state::{Blackboard, GameState, GameStateIndex};
+use macroquad::math::Vec2;
 
 pub struct StatePlayerInput {
+    /// The choice coming from the user interface.
     slot_picked: Option<u32>,
-    animator: StoneAnimator,
+    /// The stone animator we use.
+    animator: Option<StoneAnimator>,
+    /// A flag whether we want to transition to game over in the end,
     transition_to_game_over: bool,
+    ///  The buffered move we need to execute.
+    buffered_move: u64,
 }
 
 impl StatePlayerInput {
     pub fn new() -> StatePlayerInput {
         StatePlayerInput {
             slot_picked: None,
-            animator: StoneAnimator::new(),
+            animator: None,
             transition_to_game_over: false,
+            buffered_move: 0,
         }
     }
 }
@@ -29,23 +35,16 @@ impl GameState for StatePlayerInput {
     fn enter(&mut self, _: &Blackboard) {
         self.slot_picked = None;
         self.transition_to_game_over = false;
+        self.animator = None;
     }
 
     /// We handle the stone animation and if not and the player has chosen a slot, we decide
     /// depending on whether it s game over or not to transition to the computer choice state
     /// or start the animation to follow up on game over.
     fn update(&mut self, delta_time: f32, black_board: &mut Blackboard) -> Option<GameStateIndex> {
-        if self.transition_to_game_over {
-            self.animator.update(delta_time);
-            if !self.animator.is_animating() {
-                black_board
-                    .game_board
-                    .apply_move_on_column(black_board.player_choice, false);
-                return Some(GameStateIndex::GameOverState);
-            }
-        }
+        if self.animator.is_none() {
+            let slot_choice = self.slot_picked?;
 
-        if let Some(slot_choice) = self.slot_picked {
             // We have chosen a slot.
             self.slot_picked = None;
 
@@ -54,20 +53,39 @@ impl GameState for StatePlayerInput {
             if coded_move == 0 {
                 return None;
             }
-            black_board.player_choice = slot_choice;
-            // Now we check, if this would result in a game over or not.
-            black_board.game_board.apply_move(coded_move, false);
-            let game_over = black_board.game_board.is_game_over();
-            black_board.game_board.revoke_move(coded_move, false);
-            // When it is not game over we can directly go to the computer calculation.
-            if !game_over {
-                return Some(GameStateIndex::ComputerCalculationState);
+
+            let mut clon = black_board.game_board.clone();
+            clon.apply_move(coded_move, false);
+            // See if we transition to game over in the end.
+            self.transition_to_game_over = clon.is_game_over();
+            self.buffered_move = coded_move;
+            let mut anim = StoneAnimator::new();
+            anim.start_animating(&black_board.game_board, slot_choice, false);
+            self.animator = Some(anim);
+            // Kick off calculation.
+            if !self.transition_to_game_over {
+                black_board.ai_system.send_analysis_request(clon);
             }
-            self.transition_to_game_over = true;
-            self.animator
-                .start_animating(&black_board.game_board, slot_choice, false);
+
+            return None;
         }
-        None
+
+        // In this case the stone is falling.
+        // In this case we have some animation going.
+        let anim = self.animator.as_mut().unwrap();
+        anim.update(delta_time);
+        if anim.is_animating() {
+            return None;
+        }
+
+        // Animation is over at that point.
+        black_board.game_board.apply_move(self.buffered_move, false);
+
+        if self.transition_to_game_over {
+            Some(GameStateIndex::GameOverState)
+        } else {
+            Some(GameStateIndex::ComputerExecutionState)
+        }
     }
 
     /// Picks the slot, that was chosen by the player.
@@ -75,15 +93,18 @@ impl GameState for StatePlayerInput {
         if self.slot_picked.is_some() {
             return;
         }
-        let slot = (position.x / WINDOW_DIMENSION * BOARD_WIDTH as f32)  as u32;
+        let slot = (position.x / WINDOW_DIMENSION * BOARD_WIDTH as f32) as u32;
         self.slot_picked = Some(slot);
     }
 
     /// Draws the board and eventually the falling stone.
     fn draw(&self, black_board: &Blackboard) {
-        if self.animator.is_animating() {
-            self.animator.draw();
+        if let Some(anim) = &self.animator {
+            if anim.is_animating() {
+                anim.draw();
+            }
         }
+
         render_board(&black_board.game_board, &black_board.board_texture);
     }
 }

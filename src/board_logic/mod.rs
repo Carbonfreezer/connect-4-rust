@@ -7,3 +7,4 @@ pub mod alpha_beta;
 pub mod bit_board;
 pub mod bit_board_coding;
 mod heuristic;
+pub mod ai_handler;

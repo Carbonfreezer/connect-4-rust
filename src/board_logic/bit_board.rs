@@ -140,17 +140,7 @@ impl BitBoard {
             self.opponent_stones |= coded_move;
         }
     }
-
-    /// Revokes an encoded move has handed out by the function *get_possible_move*.
-    /// This function is meant to be used for UI interaction and not the AI.
-    /// It is used to precheck, if a move would wind result in an ending of the game.
-    pub fn revoke_move(&mut self, coded_move: u64, is_computer: bool) {
-        if is_computer {
-            self.own_stones ^= coded_move;
-        } else {
-            self.opponent_stones ^= coded_move;
-        }
-    }
+    
 
     /// Checks if we have a draw situation under the assumption that we do not have a winning
     /// one.
