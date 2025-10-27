@@ -1,16 +1,14 @@
 # Connect Four in Rust
 
 ## Overview
-This project implements the classic Connect Four game with a sophisticated AI opponent. The AI uses a Negamax algorithm enhanced with alpha-beta pruning and transposition tables to play at a strong level. The game features smooth animations and is rendered using pure OpenGL, with AI calculations performed asynchronously to maintain responsive gameplay.
+This project implements the classic Connect Four game with a sophisticated AI opponent. The AI uses a Negamax algorithm enhanced with alpha-beta pruning and transposition tables to play at a strong level. 
+The game features smooth animations and is rendered with macroquad, with AI calculations performed asynchronously to maintain responsive gameplay.
 
-Full source code documentation can be generated with:
-```
-cargo doc --open
-```
 
 ## How to Play
 ### Starting a Game
-When you launch the program, you'll be presented with a choice screen where you select your color by clicking on either the yellow or blue circle. Yellow always moves first.
+When you launch the program, you'll be presented with a choice screen where you select your color by clicking on either 
+the yellow or blue circle. Yellow always moves first.
 
 <figure>
     <img src="Images/IntroScreen.png" alt="Start screen showing color selection" width="300" height="300">
@@ -18,7 +16,8 @@ When you launch the program, you'll be presented with a choice screen where you 
 </figure>
 
 ### During Gameplay
-Make your move by clicking anywhere in the column where you want to drop your piece. Your stone will animate falling into position while the AI calculates its response in the background.
+Make your move by clicking anywhere in the column where you want to drop your piece. 
+Your stone will animate falling into position while the AI calculates its response in the background.
 
 <figure>
     <img src="Images/RunningScreen.png" alt="Active game with pieces on the board" width="300" height="300">
@@ -26,7 +25,8 @@ Make your move by clicking anywhere in the column where you want to drop your pi
 </figure>
 
 ### Game End
-When the game concludes, the winning combination is highlighted on the board, and the result is displayed with an icon above. Click anywhere to return to the color selection screen for a new game.
+When the game concludes, the winning combination is highlighted on the board, and the result is displayed on the top. 
+Click anywhere to return to the color selection screen for a new game.
 
 <figure>
     <img src="Images/GameOver.png" alt="Game over screen showing winning combination" width="300" height="300">
@@ -37,7 +37,7 @@ When the game concludes, the winning combination is highlighted on the board, an
 The program is organized into three main modules:
 
 * **state_system**: Manages the game's state machine, coordinating transitions between menu, gameplay, and game-over states.
-* **render_system**: Handles OpenGL rendering and animations, including the smooth stone-dropping effects.
+* **render_system**: Handles rendering and animations, including the smooth stone-dropping effects.
 * **board_logic**: Contains the game board representation and AI implementation.
 
 ## Technical Highlights
@@ -45,13 +45,6 @@ The program is organized into three main modules:
 ### Asynchronous AI Computation
 In the `computer_calculation` state, AI calculations run in a separate thread using Rust's `mpsc` channels. This allows the opponent's stone to animate while the AI computes its next move, keeping the interface responsive. The threading approach was chosen over async/await (tokio) as it proved simpler and more appropriate for this use case.
 
-### Advanced Rendering with Stencil Buffers
-The board rendering presents an interesting challenge: displaying circular holes where stones can be placed while showing falling pieces that should remain visible as they drop. The solution uses a multi-pass rendering approach:
-1. First, render any falling stones
-2. Render the hole positions into the stencil buffer only
-3. Finally, render the board rectangle, masking out areas marked in the stencil buffer
-
-This technique ensures falling stones are visible while maintaining clean circular cutouts in the board.
 
 ### Efficient Bitboard Representation
 The game state is encoded using 64-bit integers, enabling highly efficient parallel operations through bitwise logic. Key concepts include:
@@ -122,9 +115,6 @@ cargo doc --open
 
 # Build and run in release mode (optimized)
 cargo run --release
-
-# Build for development (faster compilation, slower runtime)
-cargo run
 ```
 
 **Note**: Always use `--release` for normal gameplay, as the AI search depth is tuned for optimized builds.
