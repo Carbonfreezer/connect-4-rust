@@ -13,20 +13,23 @@ pub struct StatePlayerInput {
     /// The choice coming from the user interface.
     slot_picked: Option<u32>,
     /// The stone animator we use.
-    animator: Option<StoneAnimator>,
+    animator: StoneAnimator,
     /// A flag whether we want to transition to game over in the end,
     transition_to_game_over: bool,
     ///  The buffered move we need to execute.
     buffered_move: u64,
+    /// Indicates, that we are waiting for player input.
+    waiting_for_player: bool,
 }
 
 impl StatePlayerInput {
     pub fn new() -> StatePlayerInput {
         StatePlayerInput {
             slot_picked: None,
-            animator: None,
+            animator: StoneAnimator::new(),
             transition_to_game_over: false,
             buffered_move: 0,
+            waiting_for_player: false,
         }
     }
 }
@@ -35,14 +38,14 @@ impl GameState for StatePlayerInput {
     fn enter(&mut self, _: &Blackboard) {
         self.slot_picked = None;
         self.transition_to_game_over = false;
-        self.animator = None;
+        self.waiting_for_player = true;
     }
 
     /// We handle the stone animation and if not and the player has chosen a slot, we decide
     /// depending on whether it s game over or not to transition to the computer choice state
     /// or start the animation to follow up on game over.
     fn update(&mut self, delta_time: f32, black_board: &mut Blackboard) -> Option<GameStateIndex> {
-        if self.animator.is_none() {
+        if self.waiting_for_player  {
             let slot_choice = self.slot_picked?;
 
             // We have chosen a slot.
@@ -54,14 +57,13 @@ impl GameState for StatePlayerInput {
                 return None;
             }
 
+            self.waiting_for_player = false;
             let mut clon = black_board.game_board.clone();
             clon.apply_move(coded_move, false);
             // See if we transition to game over in the end.
             self.transition_to_game_over = clon.is_game_over();
             self.buffered_move = coded_move;
-            let mut anim = StoneAnimator::new();
-            anim.start_animating(&black_board.game_board, slot_choice, false);
-            self.animator = Some(anim);
+            self.animator.start_animating(&black_board.game_board, slot_choice, false);
             // Kick off calculation.
             if !self.transition_to_game_over {
                 black_board.ai_system.send_analysis_request(clon);
@@ -72,9 +74,8 @@ impl GameState for StatePlayerInput {
 
         // In this case the stone is falling.
         // In this case we have some animation going.
-        let anim = self.animator.as_mut().unwrap();
-        anim.update(delta_time);
-        if anim.is_animating() {
+        self.animator.update(delta_time);
+        if self.animator.is_animating() {
             return None;
         }
 
@@ -99,10 +100,9 @@ impl GameState for StatePlayerInput {
 
     /// Draws the board and eventually the falling stone.
     fn draw(&self, black_board: &Blackboard) {
-        if let Some(anim) = &self.animator {
-            if anim.is_animating() {
-                anim.draw();
-            }
+       
+        if self.animator.is_animating() {
+            self.animator.draw();
         }
 
         render_board(&black_board.game_board, &black_board.board_texture);
