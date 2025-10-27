@@ -7,7 +7,7 @@
 //! 1. The player select state, where the player can choose when to start.
 //! 2. The computer execution state, where a determined move gets executed.
 //! 3. The player input state. Input is processed here and also the animation is shown, when this would end ending the game.
-//!    A calculation of the move is also kicked off here. 
+//!    A calculation of the move is also kicked off here.
 //! 4. The game end state, that shows the game situation and asks for a confirmation button to start over.
 //!
 //! Transitions are

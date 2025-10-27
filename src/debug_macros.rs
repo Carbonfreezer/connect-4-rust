@@ -1,6 +1,5 @@
 //! Here we collect a couple of custom debug macros.
 
-
 /// Verifier macros for coordinates, can be used with x and y coordinates for a position, or a
 /// column only. Checks for the type to be usize and if they do not exceed the desired range,
 ///

@@ -140,7 +140,6 @@ impl BitBoard {
             self.opponent_stones |= coded_move;
         }
     }
-    
 
     /// Checks if we have a draw situation under the assumption that we do not have a winning
     /// one.

@@ -52,7 +52,7 @@ const fn make_adjusted_value() -> [f32; 12] {
 
     let mut i = 0;
     while i < 12 {
-        local[i] *= local[i] * 0.001;
+        local[i] = local[i] * local[i] * 0.001;
         i += 1;
     }
     local

@@ -2,7 +2,7 @@
 //! of the communication.
 
 use crate::board_logic::alpha_beta::AlphaBeta;
-use crate::board_logic::bit_board::{BitBoard};
+use crate::board_logic::bit_board::BitBoard;
 use std::sync::mpsc;
 use std::thread;
 

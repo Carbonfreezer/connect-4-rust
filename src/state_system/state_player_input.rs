@@ -4,7 +4,7 @@
 //! while the stone is still falling down.
 
 use crate::board_logic::bit_board_coding::BOARD_WIDTH;
-use crate::render_system::graphics::{render_board, WINDOW_DIMENSION};
+use crate::render_system::graphics::{WINDOW_DIMENSION, render_board};
 use crate::render_system::stone_animator::StoneAnimator;
 use crate::state_system::game_state::{Blackboard, GameState, GameStateIndex};
 use macroquad::math::Vec2;
@@ -45,7 +45,7 @@ impl GameState for StatePlayerInput {
     /// depending on whether it s game over or not to transition to the computer choice state
     /// or start the animation to follow up on game over.
     fn update(&mut self, delta_time: f32, black_board: &mut Blackboard) -> Option<GameStateIndex> {
-        if self.waiting_for_player  {
+        if self.waiting_for_player {
             let slot_choice = self.slot_picked?;
 
             // We have chosen a slot.
@@ -63,7 +63,8 @@ impl GameState for StatePlayerInput {
             // See if we transition to game over in the end.
             self.transition_to_game_over = clon.is_game_over();
             self.buffered_move = coded_move;
-            self.animator.start_animating(&black_board.game_board, slot_choice, false);
+            self.animator
+                .start_animating(&black_board.game_board, slot_choice, false);
             // Kick off calculation.
             if !self.transition_to_game_over {
                 black_board.ai_system.send_analysis_request(clon);
@@ -100,7 +101,6 @@ impl GameState for StatePlayerInput {
 
     /// Draws the board and eventually the falling stone.
     fn draw(&self, black_board: &Blackboard) {
-       
         if self.animator.is_animating() {
             self.animator.draw();
         }

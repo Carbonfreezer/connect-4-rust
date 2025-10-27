@@ -1,6 +1,6 @@
 //! Program is an adaption of the Four Connect game. It features an alpha-beta pruned negamax algorithm
 //! with transposition tables and a thread based asynchronous user interface.
-//! 
+//!
 #![doc(html_logo_url = "https://www.rust-lang.org/logos/rust-logo-128x128.png")]
 #![doc(html_favicon_url = "https://www.rust-lang.org/favicon.ico")]
 
@@ -10,14 +10,12 @@ mod board_logic;
 mod debug_macros;
 mod render_system;
 
-
-
 use macroquad::miniquad::window::set_window_size;
 use state_system::*;
 
 use crate::game_state::{Blackboard, GameStateIndex, generate_state_collection};
+use crate::render_system::graphics::{WINDOW_DIMENSION, create_board_texture};
 use macroquad::prelude::*;
-use crate::render_system::graphics::{create_board_texture, WINDOW_DIMENSION};
 
 #[macroquad::main("Connect four")]
 async fn main() {
@@ -25,7 +23,8 @@ async fn main() {
 
     let board_texture = create_board_texture();
     // Origin is in the lower left corner
-    let camera = Camera2D::from_display_rect(Rect::new(0.0, 0.0, WINDOW_DIMENSION, WINDOW_DIMENSION));
+    let camera =
+        Camera2D::from_display_rect(Rect::new(0.0, 0.0, WINDOW_DIMENSION, WINDOW_DIMENSION));
     set_camera(&camera);
 
     let mut state_array = generate_state_collection();
@@ -55,5 +54,3 @@ async fn main() {
         next_frame().await
     }
 }
-
-

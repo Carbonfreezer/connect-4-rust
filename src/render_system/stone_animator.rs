@@ -1,10 +1,10 @@
 //! This module is in charge of dropping stones into the game board.
 
-use macroquad::prelude::Vec2;
 use crate::board_logic::bit_board::BitBoard;
 use crate::board_logic::bit_board_coding::BOARD_WIDTH;
+use crate::debug_check_board_coordinates;
 use crate::render_system::graphics::*;
-use crate::{debug_check_board_coordinates};
+use macroquad::prelude::Vec2;
 
 /// An animator that takes care on animating a stone into the drawing arena.
 /// It can render itself and update itself and indicates if it is finished or not.
