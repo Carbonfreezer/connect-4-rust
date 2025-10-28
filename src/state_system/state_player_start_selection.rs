@@ -48,9 +48,6 @@ impl GameState for StatePlayerStartSelection {
                 .game_board
                 .set_computer_first(self.position_selected == 1);
             if self.position_selected == 1 {
-                black_board
-                    .ai_system
-                    .send_analysis_request(black_board.game_board.clone());
                 return Some(GameStateIndex::ComputerExecutionState);
             } else {
                 return Some(GameStateIndex::PlayerInputState);

@@ -1,7 +1,6 @@
 //! This module contains the trait of all states and contains a blackboard,
 //! over which states can exchange information.
 
-use crate::board_logic::ai_handler::AiHandler;
 use crate::board_logic::bit_board::BitBoard;
 use crate::state_game_over::StateGameOver;
 use crate::state_player_start_selection::StatePlayerStartSelection;
@@ -9,6 +8,7 @@ use crate::state_system::state_computer_execution::StateComputerExecution;
 use crate::state_system::state_player_input::StatePlayerInput;
 use macroquad::math::Vec2;
 use macroquad::prelude::Texture2D;
+use crate::board_logic::alpha_beta::AlphaBeta;
 
 /// All implemented game states get an index, with which they can refer to each other.
 pub enum GameStateIndex {
@@ -34,7 +34,7 @@ pub struct Blackboard {
     /// The general board, that show the current game.
     pub game_board: BitBoard,
     /// The ai handler for the threaded Ai.
-    pub ai_system: AiHandler,
+    pub alpha_beta: AlphaBeta,
     /// The pre-computed board texture with holes.
     pub board_texture: Texture2D,
 }
@@ -43,7 +43,7 @@ impl Blackboard {
     pub fn new(texture: Texture2D) -> Blackboard {
         Blackboard {
             game_board: BitBoard::new(),
-            ai_system: AiHandler::new(),
+            alpha_beta: AlphaBeta::new(),
             board_texture: texture,
         }
     }

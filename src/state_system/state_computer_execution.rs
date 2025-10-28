@@ -9,7 +9,7 @@ use macroquad::math::Vec2;
 pub struct StateComputerExecution {
     animator: StoneAnimator,
     slot_picked: u32,
-    result_received: bool,
+    computation_executed: bool,
 }
 
 impl StateComputerExecution {
@@ -17,7 +17,7 @@ impl StateComputerExecution {
         StateComputerExecution {
             animator: StoneAnimator::new(),
             slot_picked: 0,
-            result_received: false,
+            computation_executed: false,
         }
     }
 }
@@ -26,22 +26,31 @@ impl GameState for StateComputerExecution {
     /// Here we start the animation of the stone and feed the new situation to the worker
     /// thread to perform the computations.
     fn enter(&mut self, _: &Blackboard) {
-        self.result_received = false;
+        self.computation_executed = false;
     }
 
     /// In the update we perform the animation and once it is finished we check with the worker
     /// thread, if the results are present and if so leave the thread for execution.
     fn update(&mut self, delta_time: f32, black_board: &mut Blackboard) -> Option<GameStateIndex> {
-        if !self.result_received {
-            if let Some(slot_choice) = black_board.ai_system.try_get_computation_result() {
-                self.slot_picked = slot_choice;
-                self.animator
-                    .start_animating(&black_board.game_board, slot_choice, true);
-                self.result_received = true;
-            }
+
+        // Do this one frame delayed to get smooth animations.
+        if self.computation_executed && (!self.animator.is_animating()) {
+            self.animator
+                .start_animating(&black_board.game_board, self.slot_picked, true);
+            
+            return None;
+        }
+
+
+        if !self.computation_executed {
+            let slot_choice = black_board.alpha_beta.get_best_move(black_board.game_board.clone());
+            self.slot_picked = slot_choice;
+
+            self.computation_executed = true;
 
             return None;
         }
+
 
         if self.animator.is_animating() {
             self.animator.update(delta_time);

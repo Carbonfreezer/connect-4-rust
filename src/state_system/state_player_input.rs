@@ -64,10 +64,6 @@ impl GameState for StatePlayerInput {
             self.buffered_move = coded_move;
             self.animator
                 .start_animating(&black_board.game_board, slot_choice, false);
-            // Kick off calculation.
-            if !self.transition_to_game_over {
-                black_board.ai_system.send_analysis_request(clon);
-            }
 
             return None;
         }
