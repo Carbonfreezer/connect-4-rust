@@ -6,7 +6,8 @@ edition = "2024"
 [dependencies]
 macroquad = "0.4.14"
 
-# Profile for profiling
-[profile.profiling]
-inherits = "release"
-debug = true
+# In Cargo.toml Optimize for size
+[profile.release]
+opt-level = "z"
+lto = true
+codegen-units = 1
