@@ -7,26 +7,72 @@
         body {
             margin: 0;
             padding: 0;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            min-height: 100vh;
             background: #222;
+            color: #fff;
+            font-family: Arial, sans-serif;
         }
+
+        #game-container {
+            max-width: 900px;
+            margin: 0 auto;
+            padding: 20px;
+            text-align: center;
+        }
+
+        h1 {
+            color: #fff;
+            margin-bottom: 10px;
+        }
+
+        #description {
+            margin: 0 auto 30px auto;
+            line-height: 1.6;
+            color: #ccc;
+            text-align: left;
+            max-width: 800px;
+            padding: 0 20px;
+        }
+
         canvas {
             max-width: 90vmin;
             max-height: 90vmin;
             width: 800px;
             height: 800px;
             display: block;
+            margin: 0 auto;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.5);
+        }
+
+        #credits {
+            margin-top: 20px;
+            color: #888;
+            font-size: 14px;
         }
     </style>
 </head>
 <body>
 
+<div id="game-container">
+    <h1>Connect Four in Rust</h1>
 
+    <div id="description">
+        This project implements the classic Connect Four game with a sophisticated AI opponent.
+        The AI uses a Negamax algorithm enhanced with alpha-beta pruning and transposition tables to play at a strong level.
+        The game features smooth animations and is rendered with macroquad and implemented in Rust.
 
-<canvas id="glcanvas" tabindex='1'></canvas>
+        <h3>How to play</h3>
+        First you select if you want to start the game (left circle) or the computer (right circle). During the game
+        you click simply somewhere on the columns. Once the game is finished you are taken back to the start screen
+        by a mouse click.
+    </div>
+
+    <canvas id="glcanvas" tabindex='1'></canvas>
+
+    <div id="credits">
+        Written by Christoph Lürig
+    </div>
+</div>
+
 <script src="https://not-fl3.github.io/miniquad-samples/mq_js_bundle.js"></script>
 <script>
     load("connect-4.wasm");
