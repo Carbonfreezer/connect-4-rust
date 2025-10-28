@@ -33,6 +33,31 @@
             padding: 0 20px;
         }
 
+        .info-box {
+            background: #2a2a2a;
+            border: 1px solid #444;
+            border-radius: 8px;
+            padding: 20px;
+            margin: 20px 0;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.3);
+        }
+
+        .info-box h3 {
+            color: #4a9eff;
+            margin-top: 0;
+            margin-bottom: 15px;
+            border-bottom: 2px solid #444;
+            padding-bottom: 10px;
+        }
+
+        .info-box p {
+            margin: 12px 0;
+        }
+
+        .info-box strong {
+            color: #88c0ff;
+        }
+
         canvas {
             max-width: 90vmin;
             max-height: 90vmin;
@@ -59,6 +84,22 @@
         This project implements the classic Connect Four game with a sophisticated AI opponent.
         The AI uses a Negamax algorithm enhanced with alpha-beta pruning and transposition tables to play at a strong level.
         The game features smooth animations, is rendered with Macroquad, and is implemented in Rust.
+
+        <div class="info-box">
+            <h3>Rules of Connect Four</h3>
+            <p>Connect Four is a two-player strategy game played on a vertical 7×6 grid where players compete to align four of their colored discs.</p>
+
+            <p><strong>Setup:</strong> The game begins with an empty grid. Players choose their colors.</p>
+
+            <p><strong>Gameplay:</strong> Players take turns dropping one disc from the top into any of the seven columns. The disc falls straight down, occupying the lowest available space within that column. The first player to form a horizontal, vertical, or diagonal line of four of their own discs wins the game.</p>
+
+            <p><strong>Strategy:</strong> Players must balance offensive moves (creating their own winning threats) with defensive moves (blocking their opponent's potential wins). Creating multiple simultaneous threats often leads to victory.</p>
+
+            <p><strong>Winning:</strong> The game ends when a player successfully connects four discs in a row (horizontally, vertically, or diagonally), or when the grid is completely filled. If the grid fills without any player achieving four in a row, the game is a draw.</p>
+
+            <p><strong>Key Insight:</strong> Center column control is crucial as it provides the most opportunities for creating winning combinations. Corner and edge positions offer fewer connection possibilities.</p>
+        </div>
+
 
         <h3>How to play</h3>
         First, you select whether to start the game (left circle) or the computer (right circle). During the game,
