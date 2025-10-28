@@ -14,14 +14,16 @@ use macroquad::miniquad::window::set_window_size;
 use state_system::*;
 
 use crate::game_state::{Blackboard, GameStateIndex, generate_state_collection};
-use crate::render_system::graphics::{WINDOW_DIMENSION, create_board_texture};
+use crate::render_system::graphics::{WINDOW_DIMENSION};
 use macroquad::prelude::*;
 
-#[macroquad::main("Connect four")]
+
+
+#[macroquad::main("Connect Four")]
 async fn main() {
     set_window_size(WINDOW_DIMENSION as u32, WINDOW_DIMENSION as u32);
+    let board_texture = load_texture("board_holes.png").await.unwrap();
 
-    let board_texture = create_board_texture();
     // Origin is in the lower left corner
     let camera =
         Camera2D::from_display_rect(Rect::new(0.0, 0.0, WINDOW_DIMENSION, WINDOW_DIMENSION));
