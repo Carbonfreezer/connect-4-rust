@@ -9,35 +9,36 @@ use crate::board_logic::bit_board_coding::{
 
 /// Returns the number of open triplets we have.
 fn count_open_three(board: u64, free_spots: u64) -> u32 {
-    let mut triplets = 0;
+    
+    let mut empty_spots = 0;
 
     for bit_shift in DIR_INCREMENT {
         // XXX_ Pattern
         let double_pos = clip_shift(board, bit_shift) & board;
         let dd = clip_shift(double_pos, bit_shift) & board;
         let triplets_after = clip_shift(dd, bit_shift) & free_spots;
-        triplets += triplets_after.count_ones();
+        empty_spots |= triplets_after;
 
         // XX_X pattern
         let free_match = clip_shift(double_pos, bit_shift) & free_spots;
         let spot_right = clip_shift(free_match, bit_shift) & board;
-        triplets += spot_right.count_ones();
-
+        empty_spots |= clip_shift_inverse(spot_right, bit_shift);
+        
         // X_XX pattern
         let free_left_match =
             clip_shift_inverse(clip_shift_inverse(double_pos, bit_shift), bit_shift) & free_spots;
         let spot_left = clip_shift_inverse(free_left_match, bit_shift) & board;
-        triplets += spot_left.count_ones();
+        empty_spots |= clip_shift(spot_left, bit_shift);
 
         // _XXX Pattern
         let triplets_before = clip_shift_inverse(
             clip_shift_inverse(clip_shift_inverse(dd, bit_shift), bit_shift),
             bit_shift,
         ) & free_spots;
-        triplets += triplets_before.count_ones();
+        empty_spots |= triplets_before;
     }
 
-    triplets
+    empty_spots.count_ones()
 }
 
 /// This function turns standard values from the literature into representations
